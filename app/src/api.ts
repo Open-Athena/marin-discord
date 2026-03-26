@@ -1,4 +1,4 @@
-import type { Channel, Message, SearchResult } from './types'
+import type { Channel, Message, SearchResult, User } from './types'
 
 const BASE = '/api'
 
@@ -26,6 +26,10 @@ export function fetchMessages(
 
 export function fetchMessage(id: string): Promise<Message> {
   return fetchJson(`${BASE}/messages/${id}`)
+}
+
+export function fetchUsers(): Promise<User[]> {
+  return fetchJson(`${BASE}/users`)
 }
 
 export function searchMessages(query: string, limit = 50): Promise<SearchResult[]> {

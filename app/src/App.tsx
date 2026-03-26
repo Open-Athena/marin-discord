@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
-import type { Channel } from './types'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { Channel, User } from './types'
+import { fetchChannels, fetchUsers } from './api'
+import { LookupContext } from './context'
 import ChannelList from './components/ChannelList'
 import MessageList from './components/MessageList'
 import SearchPanel from './components/SearchPanel'
@@ -16,19 +18,42 @@ function parseHash(): { channelId: string | null; messageId: string | null } {
 }
 
 export default function App() {
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  // Parse hash on load
+  // Fetch channels + users on mount
   useEffect(() => {
+    fetchChannels().then(setChannels).catch(console.error)
+    fetchUsers().then(setUsers).catch(console.error)
+  }, [])
+
+  const lookup = useMemo(() => ({
+    channels: new Map(channels.map(c => [c.id, c])),
+    users: new Map(users.map(u => [u.id, u])),
+  }), [channels, users])
+
+  // Parse hash on load and on hash changes
+  const navigateToHash = useCallback(() => {
+    if (!channels.length) return
     const { channelId, messageId } = parseHash()
     if (channelId) {
-      // Create a minimal channel object; MessageList only needs the id
-      setActiveChannel({ id: channelId, name: '', type: 0, position: 0, message_count: 0, oldest: null, newest: null })
-      if (messageId) setTargetMessageId(messageId)
+      const ch = channels.find(c => c.id === channelId)
+      setActiveChannel(ch || { id: channelId, name: '', type: 0, position: 0, message_count: 0, oldest: null, newest: null })
+      setTargetMessageId(messageId)
     }
-  }, [])
+  }, [channels])
+
+  useEffect(() => {
+    navigateToHash()
+  }, [navigateToHash])
+
+  useEffect(() => {
+    window.addEventListener('hashchange', navigateToHash)
+    return () => window.removeEventListener('hashchange', navigateToHash)
+  }, [navigateToHash])
 
   const handleSelectChannel = useCallback((channel: Channel) => {
     setActiveChannel(channel)
@@ -45,52 +70,55 @@ export default function App() {
   }, [activeChannel])
 
   return (
-    <div className="app">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <h1>Discord Archive</h1>
+    <LookupContext.Provider value={lookup}>
+      <div className="app">
+        <div className="sidebar">
+          <div className="sidebar-header">
+            <h1>Discord Archive</h1>
+          </div>
+          <ChannelList
+            channels={channels}
+            activeChannelId={activeChannel?.id ?? null}
+            onSelectChannel={handleSelectChannel}
+          />
         </div>
-        <ChannelList
-          activeChannelId={activeChannel?.id ?? null}
-          onSelectChannel={handleSelectChannel}
-        />
-      </div>
-      <div className="main">
-        <div className="main-header">
-          <div className="main-header-left">
-            {activeChannel && (
-              <>
-                <span className="header-hash">#</span>
-                <span className="header-channel-name">{activeChannel.name}</span>
-              </>
+        <div className="main">
+          <div className="main-header">
+            <div className="main-header-left">
+              {activeChannel && (
+                <>
+                  <span className="header-hash">#</span>
+                  <span className="header-channel-name">{activeChannel.name}</span>
+                </>
+              )}
+            </div>
+            <button
+              className="search-toggle"
+              onClick={() => setSearchOpen(!searchOpen)}
+            >
+              Search
+            </button>
+          </div>
+          <div className="main-content">
+            {activeChannel ? (
+              <MessageList
+                key={`${activeChannel.id}-${targetMessageId || ''}`}
+                channelId={activeChannel.id}
+                targetMessageId={targetMessageId}
+                onNavigate={handleNavigate}
+              />
+            ) : (
+              <div className="no-channel">Select a channel to view messages</div>
             )}
           </div>
-          <button
-            className="search-toggle"
-            onClick={() => setSearchOpen(!searchOpen)}
-          >
-            Search
-          </button>
-        </div>
-        <div className="main-content">
-          {activeChannel ? (
-            <MessageList
-              key={`${activeChannel.id}-${targetMessageId || ''}`}
-              channelId={activeChannel.id}
-              targetMessageId={targetMessageId}
+          {searchOpen && (
+            <SearchPanel
               onNavigate={handleNavigate}
+              onClose={() => setSearchOpen(false)}
             />
-          ) : (
-            <div className="no-channel">Select a channel to view messages</div>
           )}
         </div>
-        {searchOpen && (
-          <SearchPanel
-            onNavigate={handleNavigate}
-            onClose={() => setSearchOpen(false)}
-          />
-        )}
       </div>
-    </div>
+    </LookupContext.Provider>
   )
 }

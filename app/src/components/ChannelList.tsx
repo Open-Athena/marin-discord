@@ -1,26 +1,14 @@
-import { useEffect, useState } from 'react'
 import type { Channel } from '../types'
-import { fetchChannels, prefetchMessages } from '../api'
+import { prefetchMessages } from '../api'
 
 interface Props {
+  channels: Channel[]
   activeChannelId: string | null
   onSelectChannel: (channel: Channel) => void
 }
 
-export default function ChannelList({ activeChannelId, onSelectChannel }: Props) {
-  const [channels, setChannels] = useState<Channel[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchChannels()
-      .then(chs => {
-        chs.sort((a, b) => a.name.localeCompare(b.name))
-        setChannels(chs)
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return <div className="channel-list-loading">Loading channels...</div>
+export default function ChannelList({ channels, activeChannelId, onSelectChannel }: Props) {
+  if (!channels.length) return <div className="channel-list-loading">Loading channels...</div>
 
   return (
     <div className="channel-list">

@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Message as MessageType } from '../types'
+import type { LookupData } from '../context'
+import { useLookup } from '../context'
 import { fetchMessage } from '../api'
+import Tooltip from './Tooltip'
 
 function avatarUrl(authorId: string, avatar: string | null): string {
   if (avatar) {
@@ -15,7 +18,7 @@ function formatTimestamp(ts: string): string {
     + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 }
 
-function renderContent(content: string): ReactNode[] {
+function renderContent(content: string, lookup: LookupData): ReactNode[] {
   if (!content) return []
 
   const parts: ReactNode[] = []
@@ -28,7 +31,7 @@ function renderContent(content: string): ReactNode[] {
 
   while ((match = codeBlockRegex.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(...renderInline(content.slice(lastIndex, match.index), key))
+      parts.push(...renderInline(content.slice(lastIndex, match.index), key, lookup))
       key += 100
     }
     parts.push(
@@ -40,18 +43,18 @@ function renderContent(content: string): ReactNode[] {
   }
 
   if (lastIndex < content.length) {
-    parts.push(...renderInline(content.slice(lastIndex), key))
+    parts.push(...renderInline(content.slice(lastIndex), key, lookup))
   }
 
   return parts
 }
 
-function renderInline(text: string, keyOffset: number): ReactNode[] {
+function renderInline(text: string, keyOffset: number, lookup: LookupData): ReactNode[] {
   const parts: ReactNode[] = []
   let key = keyOffset
 
   // Process inline patterns
-  const inlineRegex = /(`[^`]+`)|(\*\*\*(.+?)\*\*\*)|(\*\*(.+?)\*\*)|(\*(.+?)\*)|(\|\|(.+?)\|\|)|(https?:\/\/[^\s<>]+)/g
+  const inlineRegex = /(`[^`]+`)|(\*\*\*(.+?)\*\*\*)|(\*\*(.+?)\*\*)|(\*(.+?)\*)|(\|\|(.+?)\|\|)|(\[([^\]]+)\]\((https?:\/\/[^)]+)\))|(https?:\/\/[^\s<>)]+)|(<#(\d+)>)|(<@!?(\d+)>)|(<@&(\d+)>)/g
   let lastIndex = 0
   let match: RegExpExecArray | null
 
@@ -76,8 +79,25 @@ function renderInline(text: string, keyOffset: number): ReactNode[] {
       // spoiler
       parts.push(<span key={`sp-${key++}`} className="spoiler">{match[9]}</span>)
     } else if (match[10]) {
-      // link
-      parts.push(<a key={`a-${key++}`} href={match[10]} target="_blank" rel="noopener noreferrer">{match[10]}</a>)
+      // markdown link [text](url)
+      parts.push(<a key={`a-${key++}`} href={match[12]} target="_blank" rel="noopener noreferrer">{match[11]}</a>)
+    } else if (match[13]) {
+      // bare link
+      parts.push(<a key={`a-${key++}`} href={match[13]} target="_blank" rel="noopener noreferrer">{match[13]}</a>)
+    } else if (match[14]) {
+      // channel mention <#id>
+      const chId = match[15]
+      const ch = lookup.channels.get(chId)
+      const chName = ch ? ch.name : 'unknown-channel'
+      parts.push(<span key={`ch-${key++}`} className="mention" onClick={() => { location.hash = chId }}>#{chName}</span>)
+    } else if (match[16]) {
+      // user mention <@id> or <@!id>
+      const user = lookup.users.get(match[17])
+      const userName = user?.global_name || user?.username || 'Unknown User'
+      parts.push(<span key={`um-${key++}`} className="mention">@{userName}</span>)
+    } else if (match[18]) {
+      // role mention <@&id>
+      parts.push(<span key={`rm-${key++}`} className="mention">@role</span>)
     }
 
     lastIndex = match.index + match[0].length
@@ -140,17 +160,20 @@ interface Props {
 }
 
 export default function MessageComponent({ message, compact, onNavigate }: Props) {
+  const lookup = useLookup()
+
   if (isSystemMessage(message.type)) {
     return (
       <div className="message system-message" data-message-id={message.id}>
         <em>{systemMessageText(message)}</em>
-        <span className="timestamp">{formatTimestamp(message.timestamp)}</span>
+        <a className="timestamp" href={`#${message.channel_id}/${message.id}`}>{formatTimestamp(message.timestamp)}</a>
       </div>
     )
   }
 
   const displayName = message.global_name || message.username
   const avatar = avatarUrl(message.author_id, message.avatar)
+  const permalink = `#${message.channel_id}/${message.id}`
 
   return (
     <div className={`message${compact ? ' compact' : ''}`} data-message-id={message.id}>
@@ -160,9 +183,9 @@ export default function MessageComponent({ message, compact, onNavigate }: Props
       <div className="message-body">
         {compact ? (
           <div className="compact-gutter">
-            <span className="compact-timestamp" title={formatTimestamp(message.timestamp)}>
+            <a className="compact-timestamp" href={permalink} title={formatTimestamp(message.timestamp)}>
               {new Date(message.timestamp).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-            </span>
+            </a>
           </div>
         ) : (
           <img className="avatar" src={avatar} alt="" width={40} height={40} />
@@ -171,11 +194,11 @@ export default function MessageComponent({ message, compact, onNavigate }: Props
           {!compact && (
             <div className="message-header">
               <span className="author-name">{displayName}</span>
-              <span className="timestamp">{formatTimestamp(message.timestamp)}</span>
+              <a className="timestamp" href={permalink}>{formatTimestamp(message.timestamp)}</a>
               {message.edited_timestamp && <span className="edited">(edited)</span>}
             </div>
           )}
-          <div className="message-text">{renderContent(message.content)}</div>
+          <div className="message-text">{renderContent(message.content, lookup)}</div>
 
           {message.attachments.length > 0 && (
             <div className="attachments">
@@ -219,10 +242,14 @@ export default function MessageComponent({ message, compact, onNavigate }: Props
                     <div className="embed-description">{embed.description}</div>
                   )}
                   {embed.thumbnail_url && (
-                    <img className="embed-thumbnail" src={embed.thumbnail_url} alt="" />
+                    embed.url
+                      ? <a href={embed.url} target="_blank" rel="noopener noreferrer"><img className="embed-thumbnail" src={embed.thumbnail_url} alt="" /></a>
+                      : <img className="embed-thumbnail" src={embed.thumbnail_url} alt="" />
                   )}
                   {embed.image_url && (
-                    <img className="embed-image" src={embed.image_url} alt="" />
+                    embed.url
+                      ? <a href={embed.url} target="_blank" rel="noopener noreferrer"><img className="embed-image" src={embed.image_url} alt="" /></a>
+                      : <img className="embed-image" src={embed.image_url} alt="" />
                   )}
                 </div>
               ))}
@@ -231,12 +258,19 @@ export default function MessageComponent({ message, compact, onNavigate }: Props
 
           {message.reactions.length > 0 && (
             <div className="reactions">
-              {message.reactions.map((r, i) => (
-                <span key={i} className="reaction">
-                  <span className="reaction-emoji">{r.emoji_name}</span>
-                  <span className="reaction-count">{r.count}</span>
-                </span>
-              ))}
+              {message.reactions.map((r, i) => {
+                const emoji = r.emoji_id
+                  ? <img className="reaction-emoji-img" src={`https://cdn.discordapp.com/emojis/${r.emoji_id}.webp?size=20`} alt={r.emoji_name} />
+                  : <span className="reaction-emoji">{r.emoji_name}</span>
+                return (
+                  <Tooltip key={i} content={`:${r.emoji_name}:`}>
+                    <span className="reaction">
+                      {emoji}
+                      <span className="reaction-count">{r.count}</span>
+                    </span>
+                  </Tooltip>
+                )
+              })}
             </div>
           )}
 

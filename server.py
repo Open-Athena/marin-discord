@@ -174,7 +174,40 @@ async def search_messages(request: Request):
     limit = min(int(request.query_params.get("limit", 50)), 100)
     db = get_db()
 
-    rows = db.execute("""
+    # Find channel/user IDs matching the query, so we can also search for
+    # messages containing their mention markup (<#id>, <@id>)
+    q_like = f"%{query}%"
+    mention_patterns = []
+    params: list = []
+
+    matching_channels = db.execute(
+        "SELECT id FROM channels WHERE name LIKE ?", (q_like,)
+    ).fetchall()
+    for row in matching_channels:
+        mention_patterns.append("m.content LIKE ?")
+        params.append(f"%<#{row['id']}>%")
+
+    matching_users = db.execute(
+        "SELECT id FROM users WHERE username LIKE ? OR global_name LIKE ?",
+        (q_like, q_like),
+    ).fetchall()
+    for row in matching_users:
+        mention_patterns.append("m.content LIKE ?")
+        params.append(f"%<@{row['id']}>%")
+        mention_patterns.append("m.content LIKE ?")
+        params.append(f"%<@!{row['id']}>%")
+
+    # Also search by author name
+    mention_patterns.append("u.username LIKE ?")
+    params.append(q_like)
+    mention_patterns.append("u.global_name LIKE ?")
+    params.append(q_like)
+
+    # Build UNION query: FTS results + mention/author matches
+    mention_where = " OR ".join(mention_patterns) if mention_patterns else "0"
+    all_params = [query] + params
+
+    rows = db.execute(f"""
         SELECT m.id, m.channel_id, m.content, m.timestamp,
                u.username, u.global_name, u.avatar,
                c.name as channel_name
@@ -182,10 +215,18 @@ async def search_messages(request: Request):
         JOIN messages m ON m.rowid = f.rowid
         LEFT JOIN users u ON m.author_id = u.id
         LEFT JOIN channels c ON m.channel_id = c.id
-        WHERE messages_fts MATCH ?
-        ORDER BY rank
+        WHERE messages_fts MATCH ?1
+        UNION
+        SELECT m.id, m.channel_id, m.content, m.timestamp,
+               u.username, u.global_name, u.avatar,
+               c.name as channel_name
+        FROM messages m
+        LEFT JOIN users u ON m.author_id = u.id
+        LEFT JOIN channels c ON m.channel_id = c.id
+        WHERE {mention_where}
+        ORDER BY timestamp DESC
         LIMIT ?
-    """, (query, limit)).fetchall()
+    """, all_params + [limit]).fetchall()
 
     db.close()
     return JSONResponse(rows_to_dicts(rows))
