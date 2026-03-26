@@ -54,16 +54,40 @@ async def get_channel_messages(request: Request):
     Query params:
         before: message ID cursor (fetch older messages)
         after: message ID cursor (fetch newer messages)
+        around: message ID to center on (returns limit/2 before + limit/2 after)
         limit: max messages to return (default 50, max 200)
     """
     channel_id = request.path_params["channel_id"]
     before = request.query_params.get("before")
     after = request.query_params.get("after")
+    around = request.query_params.get("around")
     limit = min(int(request.query_params.get("limit", 50)), 200)
 
     db = get_db()
 
-    if after:
+    if around:
+        half = limit // 2
+        before_rows = db.execute("""
+            SELECT m.*, u.username, u.global_name, u.avatar
+            FROM messages m
+            LEFT JOIN users u ON m.author_id = u.id
+            WHERE m.channel_id = ? AND CAST(m.id AS INTEGER) <= CAST(? AS INTEGER)
+            ORDER BY CAST(m.id AS INTEGER) DESC
+            LIMIT ?
+        """, (channel_id, around, half + 1)).fetchall()
+        after_rows = db.execute("""
+            SELECT m.*, u.username, u.global_name, u.avatar
+            FROM messages m
+            LEFT JOIN users u ON m.author_id = u.id
+            WHERE m.channel_id = ? AND CAST(m.id AS INTEGER) > CAST(? AS INTEGER)
+            ORDER BY CAST(m.id AS INTEGER) ASC
+            LIMIT ?
+        """, (channel_id, around, half)).fetchall()
+        # Combine: before_rows is newest-first, reverse it; after_rows is oldest-first
+        rows_list = list(reversed(before_rows)) + list(after_rows)
+        # Return in newest-first order for consistency
+        rows = list(reversed(rows_list))
+    elif after:
         rows = db.execute("""
             SELECT m.*, u.username, u.global_name, u.avatar
             FROM messages m
@@ -171,86 +195,110 @@ async def search_messages(request: Request):
     if not query:
         return JSONResponse([])
 
-    # Strip leading # or @ for channel/user name searches
-    name_query = query.lstrip("#").lstrip("@")
-
     limit = min(int(request.query_params.get("limit", 50)), 100)
     db = get_db()
 
-    # Find channel/user IDs matching the query, so we can also search for
-    # messages containing their mention markup (<#id>, <@id>)
+    is_channel_search = query.startswith("#")
+    is_user_search = query.startswith("@")
+    name_query = query.lstrip("#").lstrip("@")
     q_like = f"%{name_query}%"
-    mention_patterns = []
-    params: list = []
 
-    matching_channels = db.execute(
-        "SELECT id FROM channels WHERE name LIKE ?", (q_like,)
-    ).fetchall()
-    for row in matching_channels:
-        mention_patterns.append("m.content LIKE ?")
-        params.append(f"%<#{row['id']}>%")
+    base_select = """
+        SELECT m.id, m.channel_id, m.content, m.timestamp,
+               u.username, u.global_name, u.avatar,
+               c.name as channel_name
+        FROM messages m
+        LEFT JOIN users u ON m.author_id = u.id
+        LEFT JOIN channels c ON m.channel_id = c.id
+    """
 
-    matching_users = db.execute(
-        "SELECT id FROM users WHERE username LIKE ? OR global_name LIKE ?",
-        (q_like, q_like),
-    ).fetchall()
-    for row in matching_users:
-        mention_patterns.append("m.content LIKE ?")
-        params.append(f"%<@{row['id']}>%")
-        mention_patterns.append("m.content LIKE ?")
-        params.append(f"%<@!{row['id']}>%")
+    if is_channel_search:
+        # #channel: only find messages that mention matching channels
+        matching_ids = [
+            row["id"] for row in
+            db.execute("SELECT id FROM channels WHERE name LIKE ?", (q_like,)).fetchall()
+        ]
+        if not matching_ids:
+            db.close()
+            return JSONResponse([])
+        conditions = " OR ".join(f"m.content LIKE ?" for _ in matching_ids)
+        params = [f"%<#{cid}>%" for cid in matching_ids]
+        rows = db.execute(
+            f"{base_select} WHERE {conditions} ORDER BY m.timestamp DESC LIMIT ?",
+            params + [limit],
+        ).fetchall()
 
-    # Also search by author name
-    mention_patterns.append("u.username LIKE ?")
-    params.append(q_like)
-    mention_patterns.append("u.global_name LIKE ?")
-    params.append(q_like)
+    elif is_user_search:
+        # @user: find messages by or mentioning matching users
+        matching_ids = [
+            row["id"] for row in
+            db.execute(
+                "SELECT id FROM users WHERE username LIKE ? OR global_name LIKE ?",
+                (q_like, q_like),
+            ).fetchall()
+        ]
+        if not matching_ids:
+            db.close()
+            return JSONResponse([])
+        mention_conds = []
+        params: list = []
+        for uid in matching_ids:
+            mention_conds.append("m.content LIKE ?")
+            params.append(f"%<@{uid}>%")
+            mention_conds.append("m.content LIKE ?")
+            params.append(f"%<@!{uid}>%")
+            mention_conds.append("m.author_id = ?")
+            params.append(uid)
+        conditions = " OR ".join(mention_conds)
+        rows = db.execute(
+            f"{base_select} WHERE {conditions} ORDER BY m.timestamp DESC LIMIT ?",
+            params + [limit],
+        ).fetchall()
 
-    # Also search content with LIKE for partial/special-char queries FTS can't handle
-    mention_patterns.append("m.content LIKE ?")
-    params.append(f"%{name_query}%")
-
-    # Build query: try FTS UNION mention/LIKE matches
-    mention_where = " OR ".join(mention_patterns)
-
-    # FTS5 can fail on special characters; use it when the query looks safe
-    fts_safe = all(c.isalnum() or c in ' _-' for c in name_query)
-
-    if fts_safe and name_query:
-        all_params = [name_query] + params
-        rows = db.execute(f"""
-            SELECT m.id, m.channel_id, m.content, m.timestamp,
-                   u.username, u.global_name, u.avatar,
-                   c.name as channel_name
-            FROM messages_fts f
-            JOIN messages m ON m.rowid = f.rowid
-            LEFT JOIN users u ON m.author_id = u.id
-            LEFT JOIN channels c ON m.channel_id = c.id
-            WHERE messages_fts MATCH ?1
-            UNION
-            SELECT m.id, m.channel_id, m.content, m.timestamp,
-                   u.username, u.global_name, u.avatar,
-                   c.name as channel_name
-            FROM messages m
-            LEFT JOIN users u ON m.author_id = u.id
-            LEFT JOIN channels c ON m.channel_id = c.id
-            WHERE {mention_where}
-            ORDER BY timestamp DESC
-            LIMIT ?
-    """, all_params + [limit]).fetchall()
     else:
-        # FTS-unsafe query (special chars like #, @); use LIKE only
-        rows = db.execute(f"""
-            SELECT m.id, m.channel_id, m.content, m.timestamp,
-                   u.username, u.global_name, u.avatar,
-                   c.name as channel_name
-            FROM messages m
-            LEFT JOIN users u ON m.author_id = u.id
-            LEFT JOIN channels c ON m.channel_id = c.id
-            WHERE {mention_where}
-            ORDER BY timestamp DESC
-            LIMIT ?
-        """, params + [limit]).fetchall()
+        # Plain text: FTS + mention resolution
+        # First, find channel/user IDs matching the query text
+        mention_conds = []
+        mention_params: list = []
+
+        for row in db.execute("SELECT id FROM channels WHERE name LIKE ?", (q_like,)).fetchall():
+            mention_conds.append("m.content LIKE ?")
+            mention_params.append(f"%<#{row['id']}>%")
+
+        for row in db.execute(
+            "SELECT id FROM users WHERE username LIKE ? OR global_name LIKE ?",
+            (q_like, q_like),
+        ).fetchall():
+            mention_conds.append("m.content LIKE ?")
+            mention_params.append(f"%<@{row['id']}>%")
+
+        # FTS for content
+        fts_safe = all(c.isalnum() or c in ' _-' for c in name_query)
+        parts = []
+
+        if fts_safe and name_query:
+            parts.append(db.execute(f"""
+                {base_select.replace('FROM messages m', 'FROM messages_fts f JOIN messages m ON m.rowid = f.rowid')}
+                WHERE messages_fts MATCH ?
+                ORDER BY rank LIMIT ?
+            """, (name_query, limit)).fetchall())
+
+        if mention_conds:
+            conditions = " OR ".join(mention_conds)
+            parts.append(db.execute(
+                f"{base_select} WHERE {conditions} ORDER BY m.timestamp DESC LIMIT ?",
+                mention_params + [limit],
+            ).fetchall())
+
+        # Merge, deduplicate by message id
+        seen = set()
+        rows = []
+        for part in parts:
+            for row in part:
+                if row["id"] not in seen:
+                    seen.add(row["id"])
+                    rows.append(row)
+        rows = rows[:limit]
 
     db.close()
     return JSONResponse(rows_to_dicts(rows))

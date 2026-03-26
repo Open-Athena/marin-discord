@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Message as MessageType } from '../types'
-import { fetchMessages, getPrefetched } from '../api'
+import { fetchMessages, fetchMessagesAround, getPrefetched } from '../api'
 import MessageComponent from './Message'
 
 const PAGE_SIZE = 50
@@ -81,11 +81,17 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
     setHasOlder(true)
     setInitialScrollDone(false)
 
-    const prefetched = getPrefetched(channelId)
-    const promise = prefetched || fetchMessages(channelId, { limit: PAGE_SIZE })
+    let promise: Promise<MessageType[]>
+    if (targetMessageId) {
+      // Fetch messages centered around the target
+      promise = fetchMessagesAround(channelId, targetMessageId, PAGE_SIZE)
+    } else {
+      const prefetched = getPrefetched(channelId)
+      promise = prefetched || fetchMessages(channelId, { limit: PAGE_SIZE })
+    }
 
     promise.then(msgs => {
-      // API returns newest-first by default, reverse to chronological
+      // API returns newest-first, reverse to chronological
       const sorted = [...msgs].reverse()
       setMessages(sorted)
       setHasOlder(msgs.length >= PAGE_SIZE)

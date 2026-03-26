@@ -24,6 +24,11 @@ export function fetchMessages(
   return fetchJson(`${BASE}/channels/${channelId}/messages${qs ? `?${qs}` : ''}`)
 }
 
+export function fetchMessagesAround(channelId: string, messageId: string, limit = 50): Promise<Message[]> {
+  const search = new URLSearchParams({ around: messageId, limit: String(limit) })
+  return fetchJson(`${BASE}/channels/${channelId}/messages?${search}`)
+}
+
 export function fetchMessage(id: string): Promise<Message> {
   return fetchJson(`${BASE}/messages/${id}`)
 }

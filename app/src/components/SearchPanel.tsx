@@ -41,6 +41,23 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
     }
   }, [query])
 
+  function snippetAround(text: string, q: string, maxLen: number): string {
+    if (text.length <= maxLen) return text
+    const needle = q.toLowerCase()
+    const idx = text.toLowerCase().indexOf(needle)
+    if (idx < 0) {
+      // No match in resolved text — just truncate from start
+      return text.slice(0, maxLen) + '...'
+    }
+    const padding = Math.floor((maxLen - needle.length) / 2)
+    let start = Math.max(0, idx - padding)
+    let end = Math.min(text.length, idx + needle.length + padding)
+    let snippet = text.slice(start, end)
+    if (start > 0) snippet = '...' + snippet
+    if (end < text.length) snippet = snippet + '...'
+    return snippet
+  }
+
   function resolveMentions(text: string): string {
     return text
       .replace(/<#(\d+)>/g, (_, id) => {
@@ -120,8 +137,8 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
             <div className="search-result-content">
               {(() => {
                 const resolved = resolveMentions(r.content)
-                const display = resolved.length > 200 ? resolved.slice(0, 200) + '...' : resolved
-                return highlightMatch(display, query.replace(/^[#@]/, ''))
+                const display = snippetAround(resolved, query, 200)
+                return highlightMatch(display, query)
               })()}
             </div>
           </div>
