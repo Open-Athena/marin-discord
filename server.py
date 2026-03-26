@@ -171,12 +171,15 @@ async def search_messages(request: Request):
     if not query:
         return JSONResponse([])
 
+    # Strip leading # or @ for channel/user name searches
+    name_query = query.lstrip("#").lstrip("@")
+
     limit = min(int(request.query_params.get("limit", 50)), 100)
     db = get_db()
 
     # Find channel/user IDs matching the query, so we can also search for
     # messages containing their mention markup (<#id>, <@id>)
-    q_like = f"%{query}%"
+    q_like = f"%{name_query}%"
     mention_patterns = []
     params: list = []
 
@@ -203,30 +206,51 @@ async def search_messages(request: Request):
     mention_patterns.append("u.global_name LIKE ?")
     params.append(q_like)
 
-    # Build UNION query: FTS results + mention/author matches
-    mention_where = " OR ".join(mention_patterns) if mention_patterns else "0"
-    all_params = [query] + params
+    # Also search content with LIKE for partial/special-char queries FTS can't handle
+    mention_patterns.append("m.content LIKE ?")
+    params.append(f"%{name_query}%")
 
-    rows = db.execute(f"""
-        SELECT m.id, m.channel_id, m.content, m.timestamp,
-               u.username, u.global_name, u.avatar,
-               c.name as channel_name
-        FROM messages_fts f
-        JOIN messages m ON m.rowid = f.rowid
-        LEFT JOIN users u ON m.author_id = u.id
-        LEFT JOIN channels c ON m.channel_id = c.id
-        WHERE messages_fts MATCH ?1
-        UNION
-        SELECT m.id, m.channel_id, m.content, m.timestamp,
-               u.username, u.global_name, u.avatar,
-               c.name as channel_name
-        FROM messages m
-        LEFT JOIN users u ON m.author_id = u.id
-        LEFT JOIN channels c ON m.channel_id = c.id
-        WHERE {mention_where}
-        ORDER BY timestamp DESC
-        LIMIT ?
+    # Build query: try FTS UNION mention/LIKE matches
+    mention_where = " OR ".join(mention_patterns)
+
+    # FTS5 can fail on special characters; use it when the query looks safe
+    fts_safe = all(c.isalnum() or c in ' _-' for c in name_query)
+
+    if fts_safe and name_query:
+        all_params = [name_query] + params
+        rows = db.execute(f"""
+            SELECT m.id, m.channel_id, m.content, m.timestamp,
+                   u.username, u.global_name, u.avatar,
+                   c.name as channel_name
+            FROM messages_fts f
+            JOIN messages m ON m.rowid = f.rowid
+            LEFT JOIN users u ON m.author_id = u.id
+            LEFT JOIN channels c ON m.channel_id = c.id
+            WHERE messages_fts MATCH ?1
+            UNION
+            SELECT m.id, m.channel_id, m.content, m.timestamp,
+                   u.username, u.global_name, u.avatar,
+                   c.name as channel_name
+            FROM messages m
+            LEFT JOIN users u ON m.author_id = u.id
+            LEFT JOIN channels c ON m.channel_id = c.id
+            WHERE {mention_where}
+            ORDER BY timestamp DESC
+            LIMIT ?
     """, all_params + [limit]).fetchall()
+    else:
+        # FTS-unsafe query (special chars like #, @); use LIKE only
+        rows = db.execute(f"""
+            SELECT m.id, m.channel_id, m.content, m.timestamp,
+                   u.username, u.global_name, u.avatar,
+                   c.name as channel_name
+            FROM messages m
+            LEFT JOIN users u ON m.author_id = u.id
+            LEFT JOIN channels c ON m.channel_id = c.id
+            WHERE {mention_where}
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """, params + [limit]).fetchall()
 
     db.close()
     return JSONResponse(rows_to_dicts(rows))

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import type { SearchResult } from '../types'
 import { searchMessages } from '../api'
+import { useLookup } from '../context'
 
 interface Props {
   onNavigate: (channelId: string, messageId: string) => void
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function SearchPanel({ onNavigate, onClose }: Props) {
+  const lookup = useLookup()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -38,6 +40,19 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
   }, [query])
+
+  function resolveMentions(text: string): string {
+    return text
+      .replace(/<#(\d+)>/g, (_, id) => {
+        const ch = lookup.channels.get(id)
+        return ch ? `#${ch.name}` : '#unknown-channel'
+      })
+      .replace(/<@!?(\d+)>/g, (_, id) => {
+        const user = lookup.users.get(id)
+        return user ? `@${user.global_name || user.username}` : '@unknown-user'
+      })
+      .replace(/<@&(\d+)>/g, '@role')
+  }
 
   function highlightMatch(text: string, q: string): ReactNode {
     if (!q.trim()) return <>{text}</>
@@ -103,10 +118,11 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
               </span>
             </div>
             <div className="search-result-content">
-              {highlightMatch(
-                r.content.length > 200 ? r.content.slice(0, 200) + '...' : r.content,
-                query,
-              )}
+              {(() => {
+                const resolved = resolveMentions(r.content)
+                const display = resolved.length > 200 ? resolved.slice(0, 200) + '...' : resolved
+                return highlightMatch(display, query.replace(/^[#@]/, ''))
+              })()}
             </div>
           </div>
         ))}
