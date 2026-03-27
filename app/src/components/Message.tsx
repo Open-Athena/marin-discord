@@ -1,8 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import type { Message as MessageType } from '../types'
 import type { LookupData } from '../context'
 import { useLookup } from '../context'
-import { fetchMessage } from '../api'
+import { useMessage } from '../hooks'
 import Tooltip from './Tooltip'
 
 function avatarUrl(authorId: string, avatar: string | null): string {
@@ -125,11 +125,7 @@ interface ReplySnippetProps {
 }
 
 function ReplySnippet({ messageId }: ReplySnippetProps) {
-  const [refMsg, setRefMsg] = useState<MessageType | null>(null)
-
-  useEffect(() => {
-    fetchMessage(messageId).then(setRefMsg).catch(() => {})
-  }, [messageId])
+  const { data: refMsg } = useMessage(messageId)
 
   if (!refMsg) return <div className="reply-snippet">...</div>
 

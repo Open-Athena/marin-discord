@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Message as MessageType } from '../types'
-import { fetchMessages, fetchMessagesAround, getPrefetched } from '../api'
+import { useMessages } from '../hooks'
+import { fetchMessages } from '../api'
 import MessageComponent from './Message'
 
 const PAGE_SIZE = 50
@@ -63,56 +64,38 @@ interface Props {
 }
 
 export default function MessageList({ channelId, targetMessageId, onNavigate }: Props) {
-  const [messages, setMessages] = useState<MessageType[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: messages = [], isLoading } = useMessages(channelId, targetMessageId)
+  const [allMessages, setAllMessages] = useState<MessageType[]>([])
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
   const [initialScrollDone, setInitialScrollDone] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
-  const prevChannelRef = useRef<string>('')
+  const targetIndexRef = useRef<number | null>(null)
 
-  // Load initial messages
+  // Sync query data into allMessages, prepending any previously loaded older messages
   useEffect(() => {
-    if (channelId === prevChannelRef.current) return
-    prevChannelRef.current = channelId
-
-    setMessages([])
-    setLoading(true)
-    setHasOlder(true)
-    setInitialScrollDone(false)
-
-    if (targetMessageId) {
-      // Fetch messages around the target AND the newest messages, merge them
-      // so there's always enough content below the target for scrolling
-      Promise.all([
-        fetchMessagesAround(channelId, targetMessageId, PAGE_SIZE),
-        fetchMessages(channelId, { limit: PAGE_SIZE }),
-      ]).then(([around, newest]) => {
-        // Merge, deduplicate by ID, sort chronologically
-        const seen = new Set<string>()
-        const merged: MessageType[] = []
-        for (const msg of [...around, ...newest]) {
-          if (!seen.has(msg.id)) {
-            seen.add(msg.id)
-            merged.push(msg)
-          }
-        }
+    if (messages.length > 0) {
+      setAllMessages(prev => {
+        if (prev.length === 0) return messages
+        // Merge: keep older messages that aren't in the new set
+        const newIds = new Set(messages.map(m => m.id))
+        const older = prev.filter(m => !newIds.has(m.id))
+        const merged = [...older, ...messages]
         merged.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-        setMessages(merged)
-        setHasOlder(merged.length >= PAGE_SIZE)
-      }).finally(() => setLoading(false))
-    } else {
-      const prefetched = getPrefetched(channelId)
-      const promise = prefetched || fetchMessages(channelId, { limit: PAGE_SIZE })
-      promise.then(msgs => {
-        const sorted = [...msgs].reverse()
-        setMessages(sorted)
-        setHasOlder(msgs.length >= PAGE_SIZE)
-      }).finally(() => setLoading(false))
+        return merged
+      })
+      setHasOlder(messages.length >= PAGE_SIZE)
     }
-  }, [channelId])
+  }, [messages])
 
-  const rows = buildRows(messages)
+  // Reset when channel changes
+  useEffect(() => {
+    setAllMessages([])
+    setInitialScrollDone(false)
+    setHasOlder(true)
+  }, [channelId, targetMessageId])
+
+  const rows = buildRows(allMessages)
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -130,14 +113,10 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
     overscan: 20,
   })
 
-  const targetIndexRef = useRef<number | null>(null)
-
   function scrollToTarget(idx: number) {
     const scrollEl = parentRef.current
     if (!scrollEl) return
-    // First, scroll the target into view so the virtualizer measures it
     virtualizer.scrollToIndex(idx, { align: 'start' })
-    // Then adjust: position at ~30vh from top, or scroll to bottom if near end
     requestAnimationFrame(() => {
       const targetItem = virtualizer.getVirtualItems().find(v => v.index === idx)
       if (!targetItem) return
@@ -145,7 +124,6 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
       const desiredOffset = targetItem.start - viewportH * 0.3
       const maxScroll = scrollEl.scrollHeight - viewportH
       if (maxScroll - desiredOffset < 50) {
-        // Target is near the end — scroll to absolute bottom
         scrollEl.scrollTop = maxScroll
       } else {
         scrollEl.scrollTop = Math.max(0, desiredOffset)
@@ -164,7 +142,7 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
 
   // Scroll to bottom on initial load, or to target message
   useEffect(() => {
-    if (loading || messages.length === 0 || initialScrollDone) return
+    if (isLoading || allMessages.length === 0 || initialScrollDone) return
 
     if (targetMessageId) {
       const idx = rows.findIndex(r => r.key === targetMessageId)
@@ -180,9 +158,9 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
     // Scroll to bottom
     virtualizer.scrollToIndex(rows.length - 1, { align: 'end' })
     setInitialScrollDone(true)
-  }, [loading, messages.length, initialScrollDone, targetMessageId, rows, virtualizer])
+  }, [isLoading, allMessages.length, initialScrollDone, targetMessageId, rows, virtualizer])
 
-  // Re-scroll to target when images load and change row heights
+  // Re-scroll to target when images load
   useEffect(() => {
     if (targetIndexRef.current === null) return
     const el = parentRef.current
@@ -209,28 +187,21 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
     }
   }, [initialScrollDone, virtualizer])
 
-  // Infinite scroll: load older messages when scrolling near the top
+  // Infinite scroll: load older messages
   const loadOlder = useCallback(() => {
-    if (loadingOlder || !hasOlder || messages.length === 0) return
-
+    if (loadingOlder || !hasOlder || allMessages.length === 0) return
     setLoadingOlder(true)
-    const oldestId = messages[0].id
+    const oldestId = allMessages[0].id
 
     fetchMessages(channelId, { limit: PAGE_SIZE, before: oldestId }).then(older => {
       if (older.length < PAGE_SIZE) setHasOlder(false)
-      if (older.length === 0) {
-        setLoadingOlder(false)
-        return
+      if (older.length > 0) {
+        const sorted = [...older].reverse()
+        setAllMessages(prev => [...sorted, ...prev])
       }
+    }).finally(() => setLoadingOlder(false))
+  }, [channelId, loadingOlder, hasOlder, allMessages])
 
-      // older arrives newest-first, reverse to chronological
-      const sorted = [...older].reverse()
-      setMessages(prev => [...sorted, ...prev])
-      setLoadingOlder(false)
-    }).catch(() => setLoadingOlder(false))
-  }, [channelId, loadingOlder, hasOlder, messages])
-
-  // Watch scroll position for loading older messages
   useEffect(() => {
     const el = parentRef.current
     if (!el) return
@@ -246,11 +217,11 @@ export default function MessageList({ channelId, targetMessageId, onNavigate }: 
     return () => el.removeEventListener('scroll', onScroll)
   }, [hasOlder, loadingOlder, loadOlder, initialScrollDone])
 
-  if (loading) {
+  if (isLoading) {
     return <div className="message-list-loading">Loading messages...</div>
   }
 
-  if (messages.length === 0) {
+  if (allMessages.length === 0) {
     return <div className="message-list-empty">No messages in this channel</div>
   }
 

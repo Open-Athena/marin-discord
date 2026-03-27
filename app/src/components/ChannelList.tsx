@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Channel } from '../types'
-import { prefetchMessages } from '../api'
+import { usePrefetchMessages } from '../hooks'
 
 interface Props {
   channels: Channel[]
@@ -10,6 +10,7 @@ interface Props {
 
 export default function ChannelList({ channels, activeChannelId, onSelectChannel }: Props) {
   const activeRef = useRef<HTMLDivElement>(null)
+  const prefetch = usePrefetchMessages()
 
   // Scroll active channel into view
   useEffect(() => {
@@ -26,7 +27,7 @@ export default function ChannelList({ channels, activeChannelId, onSelectChannel
           ref={ch.id === activeChannelId ? activeRef : undefined}
           className={`channel-item${ch.id === activeChannelId ? ' active' : ''}`}
           onClick={() => onSelectChannel(ch)}
-          onMouseEnter={() => prefetchMessages(ch.id)}
+          onMouseEnter={() => prefetch(ch.id)}
         >
           <span className="channel-hash">#</span>
           <span className="channel-name">{ch.name}</span>

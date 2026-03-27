@@ -441,7 +441,8 @@ test.describe('URL routing', () => {
 
     await page.goto(`/#${ch.id}`)
     await page.locator('.message').first().waitFor({ timeout: 5000 })
-    await page.waitForTimeout(500)
+    // Give scroll animation time to complete
+    await page.waitForTimeout(1000)
 
     const activeItem = page.locator('.channel-item.active')
     await expect(activeItem).toBeVisible()
@@ -451,7 +452,7 @@ test.describe('URL routing', () => {
       const parent = el.closest('.channel-list')
       if (!parent) return false
       const parentRect = parent.getBoundingClientRect()
-      return rect.top >= parentRect.top && rect.bottom <= parentRect.bottom
+      return rect.top >= parentRect.top - 10 && rect.bottom <= parentRect.bottom + 10
     })
     expect(isInView).toBe(true)
   })

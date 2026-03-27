@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
-import type { SearchResult } from '../types'
-import { searchMessages } from '../api'
+import { useSearch } from '../hooks'
 import { useLookup } from '../context'
 
 interface Props {
@@ -11,47 +10,29 @@ interface Props {
 export default function SearchPanel({ onNavigate, onClose }: Props) {
   const lookup = useLookup()
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [loading, setLoading] = useState(false)
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
+  // Debounce the query
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-
-    if (!query.trim()) {
-      setResults([])
-      return
-    }
-
-    debounceRef.current = setTimeout(() => {
-      setLoading(true)
-      searchMessages(query.trim())
-        .then(setResults)
-        .catch(() => setResults([]))
-        .finally(() => setLoading(false))
-    }, 300)
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300)
+    return () => clearTimeout(timer)
   }, [query])
+
+  const { data: results = [], isLoading } = useSearch(debouncedQuery)
 
   function snippetAround(text: string, q: string, maxLen: number): string {
     if (text.length <= maxLen) return text
     const needle = q.toLowerCase()
     const idx = text.toLowerCase().indexOf(needle)
-    if (idx < 0) {
-      // No match in resolved text — just truncate from start
-      return text.slice(0, maxLen) + '...'
-    }
+    if (idx < 0) return text.slice(0, maxLen) + '...'
     const padding = Math.floor((maxLen - needle.length) / 2)
-    let start = Math.max(0, idx - padding)
-    let end = Math.min(text.length, idx + needle.length + padding)
+    const start = Math.max(0, idx - padding)
+    const end = Math.min(text.length, idx + needle.length + padding)
     let snippet = text.slice(start, end)
     if (start > 0) snippet = '...' + snippet
     if (end < text.length) snippet = snippet + '...'
@@ -107,17 +88,15 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
         <button className="search-close" onClick={onClose}>X</button>
       </div>
       <div className="search-results">
-        {loading && <div className="search-loading">Searching...</div>}
-        {!loading && query.trim() && results.length === 0 && (
+        {isLoading && <div className="search-loading">Searching...</div>}
+        {!isLoading && debouncedQuery && results.length === 0 && (
           <div className="search-empty">No results found</div>
         )}
         {results.map(r => (
           <div
             key={r.id}
             className="search-result"
-            onClick={() => {
-              onNavigate(r.channel_id, r.id)
-            }}
+            onClick={() => onNavigate(r.channel_id, r.id)}
           >
             <div className="search-result-header">
               <img
@@ -136,8 +115,8 @@ export default function SearchPanel({ onNavigate, onClose }: Props) {
             <div className="search-result-content">
               {(() => {
                 const resolved = resolveMentions(r.content)
-                const display = snippetAround(resolved, query, 200)
-                return highlightMatch(display, query)
+                const display = snippetAround(resolved, debouncedQuery, 200)
+                return highlightMatch(display, debouncedQuery)
               })()}
             </div>
           </div>

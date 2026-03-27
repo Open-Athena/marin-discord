@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import type { Channel, User } from './types'
-import { fetchChannels, fetchUsers } from './api'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import type { Channel } from './types'
+import { useChannels, useUsers } from './hooks'
 import { LookupContext } from './context'
 import ChannelList from './components/ChannelList'
 import MessageList from './components/MessageList'
@@ -18,17 +18,11 @@ function parseHash(): { channelId: string | null; messageId: string | null } {
 }
 
 export default function App() {
-  const [channels, setChannels] = useState<Channel[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  const { data: channels = [] } = useChannels()
+  const { data: users = [] } = useUsers()
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
-
-  // Fetch channels + users on mount
-  useEffect(() => {
-    fetchChannels().then(setChannels).catch(console.error)
-    fetchUsers().then(setUsers).catch(console.error)
-  }, [])
 
   const lookup = useMemo(() => ({
     channels: new Map(channels.map(c => [c.id, c])),

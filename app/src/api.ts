@@ -41,17 +41,3 @@ export function searchMessages(query: string, limit = 50): Promise<SearchResult[
   const search = new URLSearchParams({ q: query, limit: String(limit) })
   return fetchJson(`${BASE}/search?${search}`)
 }
-
-const prefetchCache = new Map<string, Promise<Message[]>>()
-
-export function prefetchMessages(channelId: string): void {
-  if (prefetchCache.has(channelId)) return
-  const promise = fetchMessages(channelId, { limit: 50 })
-  prefetchCache.set(channelId, promise)
-}
-
-export function getPrefetched(channelId: string): Promise<Message[]> | undefined {
-  const result = prefetchCache.get(channelId)
-  if (result) prefetchCache.delete(channelId)
-  return result
-}
