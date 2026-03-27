@@ -34,6 +34,8 @@ for line in sys.stdin:
     stripped = line.strip().upper()
     if stripped.startswith('PRAGMA'):
         continue
+    if stripped in ('BEGIN TRANSACTION;', 'COMMIT;', 'BEGIN;'):
+        continue
     # Skip multi-line CREATE TRIGGER (ends with 'END;')
     if stripped.startswith('CREATE TRIGGER'):
         while not line.strip().upper().endswith('END;'):
