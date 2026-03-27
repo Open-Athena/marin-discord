@@ -269,12 +269,12 @@ async def search_messages(request: Request):
         mention_conds = []
         mention_params: list = []
 
-        for row in db.execute("SELECT id FROM channels WHERE name LIKE ?", (q_like,)).fetchall():
+        for row in db.execute("SELECT id FROM channels WHERE name LIKE ? LIMIT 10", (q_like,)).fetchall():
             mention_conds.append("m.content LIKE ?")
             mention_params.append(f"%<#{row['id']}>%")
 
         for row in db.execute(
-            "SELECT id FROM users WHERE username LIKE ? OR global_name LIKE ?",
+            "SELECT id FROM users WHERE (username LIKE ? OR global_name LIKE ?) LIMIT 10",
             (q_like, q_like),
         ).fetchall():
             mention_conds.append("m.content LIKE ?")
@@ -290,6 +290,12 @@ async def search_messages(request: Request):
                 WHERE messages_fts MATCH ?
                 ORDER BY rank LIMIT ?
             """, (name_query, limit)).fetchall())
+
+        # Content LIKE fallback
+        parts.append(db.execute(
+            f"{base_select} WHERE m.content LIKE ? ORDER BY m.timestamp DESC LIMIT ?",
+            (f"%{name_query}%", limit),
+        ).fetchall())
 
         if mention_conds:
             conditions = " OR ".join(mention_conds)

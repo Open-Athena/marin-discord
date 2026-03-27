@@ -251,27 +251,7 @@ async function searchMessages(db: D1Database, url: URL): Promise<unknown[]> {
 		return results
 	}
 
-	// Plain text: FTS + mention resolution
-	const { results: matchingChannels } = await db.prepare(
-		"SELECT id FROM channels WHERE name LIKE ?1"
-	).bind(qLike).all()
-
-	const { results: matchingUsers } = await db.prepare(
-		"SELECT id FROM users WHERE username LIKE ?1 OR global_name LIKE ?1"
-	).bind(qLike).all()
-
-	const mentionConds: string[] = []
-	const mentionParams: unknown[] = []
-	for (const c of matchingChannels) {
-		mentionParams.push(`%<#${c.id}>%`)
-		mentionConds.push(`m.content LIKE ?${mentionParams.length}`)
-	}
-	for (const u of matchingUsers) {
-		mentionParams.push(`%<@${u.id}>%`)
-		mentionConds.push(`m.content LIKE ?${mentionParams.length}`)
-	}
-
-	// FTS query
+	// FTS query (primary), with LIKE fallback
 	const ftsResults = await db.prepare(`
 		SELECT m.id, m.channel_id, m.content, m.timestamp,
 		       u.username, u.global_name, u.avatar,
@@ -284,7 +264,31 @@ async function searchMessages(db: D1Database, url: URL): Promise<unknown[]> {
 		LIMIT ?2
 	`).bind(nameQuery, limit).all().catch(() => ({ results: [] as Record<string, unknown>[] }))
 
+	// Content LIKE fallback (catches FTS reserved words, partial matches)
+	const { results: likeResults } = await db.prepare(
+		`${baseSelect} WHERE m.content LIKE ?1 ORDER BY m.timestamp DESC LIMIT ?2`
+	).bind(`%${nameQuery}%`, limit).all()
+
+	// Mention resolution (capped at 10 to avoid expression-depth limits)
+	const { results: matchingChannels } = await db.prepare(
+		"SELECT id FROM channels WHERE name LIKE ?1 LIMIT 10"
+	).bind(qLike).all()
+
+	const { results: matchingUsers } = await db.prepare(
+		"SELECT id FROM users WHERE (username LIKE ?1 OR global_name LIKE ?1) LIMIT 10"
+	).bind(qLike).all()
+
 	let mentionResults: Record<string, unknown>[] = []
+	const mentionConds: string[] = []
+	const mentionParams: unknown[] = []
+	for (const c of matchingChannels) {
+		mentionParams.push(`%<#${c.id}>%`)
+		mentionConds.push(`m.content LIKE ?${mentionParams.length}`)
+	}
+	for (const u of matchingUsers) {
+		mentionParams.push(`%<@${u.id}>%`)
+		mentionConds.push(`m.content LIKE ?${mentionParams.length}`)
+	}
 	if (mentionConds.length > 0) {
 		const { results } = await db.prepare(
 			`${baseSelect} WHERE ${mentionConds.join(" OR ")} ORDER BY m.timestamp DESC LIMIT ?${mentionParams.length + 1}`
@@ -292,15 +296,10 @@ async function searchMessages(db: D1Database, url: URL): Promise<unknown[]> {
 		mentionResults = results
 	}
 
-	// Content LIKE fallback (covers D1 where FTS may not be available)
-	const { results: likeResults } = await db.prepare(
-		`${baseSelect} WHERE m.content LIKE ?1 ORDER BY m.timestamp DESC LIMIT ?2`
-	).bind(`%${nameQuery}%`, limit).all()
-
-	// Merge and deduplicate
+	// Merge and deduplicate (FTS results first for ranking)
 	const seen = new Set<string>()
 	const merged: Record<string, unknown>[] = []
-	for (const row of [...ftsResults.results, ...mentionResults, ...likeResults]) {
+	for (const row of [...ftsResults.results, ...likeResults, ...mentionResults]) {
 		const id = row.id as string
 		if (!seen.has(id)) {
 			seen.add(id)

@@ -76,6 +76,13 @@ else
     npx wrangler d1 execute marin-discord $REMOTE --file="$SQL_FILE" --yes
 fi
 
+# Create FTS table and rebuild (filtered from dump since it's in writable_schema)
+echo "Creating FTS index..."
+npx wrangler d1 execute marin-discord $REMOTE --command="
+CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(content, content='messages', content_rowid='rowid');
+INSERT INTO messages_fts(messages_fts) VALUES('rebuild');
+" --yes
+
 # Write metadata
 HASH=$(md5 -q "$DB_PATH" 2>/dev/null || md5sum "$DB_PATH" | cut -d' ' -f1)
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
