@@ -5,7 +5,7 @@ compatibility_date = "2024-12-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "marin-discord"
-database_id = "e7bf4268-5fc5-447b-9eba-a4e1ea4003f5"
+database_id = "8ca54637-0c8a-42fd-9ffe-5f2f97d3b960"
 
 [dev]
 port = 5273
