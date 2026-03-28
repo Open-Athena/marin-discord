@@ -12,7 +12,8 @@ from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.routing import Route
+from starlette.routing import Mount, Route
+from starlette.staticfiles import StaticFiles
 
 import sqlite3
 import sys
@@ -348,6 +349,10 @@ routes = [
     Route("/api/search", search_messages),
     Route("/api/users", get_users),
 ]
+
+att_dir = Path(DB_PATH).parent / "archive" / "attachments"
+if att_dir.is_dir():
+    routes.append(Mount("/attachments", app=StaticFiles(directory=str(att_dir))))
 
 app = Starlette(routes=routes)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"])

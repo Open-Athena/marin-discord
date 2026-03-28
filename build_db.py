@@ -137,7 +137,7 @@ def upsert_user(cur, author):
     return author["id"]
 
 
-def insert_message(cur, msg, channel_id):
+def insert_message(cur, msg, channel_id, attachments_dir=None):
     """Insert a single message and its related data."""
     author_id = upsert_user(cur, msg.get("author"))
 
@@ -163,13 +163,18 @@ def insert_message(cur, msg, channel_id):
 
     # Attachments
     for att in msg.get("attachments", []):
+        att_id = att["id"]
+        filename = att.get("filename", "unknown")
+        # Prefer local file over CDN URL
+        local_path = attachments_dir / f"{att_id}_{filename}" if attachments_dir else None
+        url = f"/attachments/{att_id}_{filename}" if local_path and local_path.exists() else att.get("url")
         cur.execute(
             """INSERT OR IGNORE INTO attachments
                (id, message_id, filename, content_type, size, url, proxy_url, width, height)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
-                att["id"], msg["id"], att.get("filename"), att.get("content_type"),
-                att.get("size"), att.get("url"), att.get("proxy_url"),
+                att_id, msg["id"], filename, att.get("content_type"),
+                att.get("size"), url, att.get("proxy_url"),
                 att.get("width"), att.get("height"),
             ),
         )
@@ -215,7 +220,7 @@ def insert_message(cur, msg, channel_id):
         )
 
 
-def load_channel_file(cur, filepath, channel_id, channel_name, channel_type=0, position=0):
+def load_channel_file(cur, filepath, channel_id, channel_name, attachments_dir, channel_type=0, position=0):
     """Load all messages from a JSON archive file into the database."""
     messages = json.loads(filepath.read_text())
     if not messages:
@@ -227,7 +232,7 @@ def load_channel_file(cur, filepath, channel_id, channel_name, channel_type=0, p
     )
 
     for msg in messages:
-        insert_message(cur, msg, channel_id)
+        insert_message(cur, msg, channel_id, attachments_dir)
 
     return len(messages)
 
@@ -248,6 +253,9 @@ def build_db(archive_dir, db_path):
 
     import re
     total_msgs = 0
+    attachments_dir = archive_dir / "attachments"
+    if not attachments_dir.is_dir():
+        attachments_dir = None
 
     # Load channel files
     channel_files = sorted(archive_dir.glob("*.json"))
@@ -261,7 +269,7 @@ def build_db(archive_dir, db_path):
 
         channel_name = m.group(1)
         channel_id = m.group(2)
-        count = load_channel_file(cur, fp, channel_id, channel_name)
+        count = load_channel_file(cur, fp, channel_id, channel_name, attachments_dir)
         err(f"  #{channel_name}: {count} messages")
         total_msgs += count
 
@@ -275,8 +283,7 @@ def build_db(archive_dir, db_path):
                 continue
             thread_name = m.group(1)
             thread_id = m.group(2)
-            # Thread channels are type 11 (public thread)
-            count = load_channel_file(cur, fp, thread_id, thread_name, channel_type=11)
+            count = load_channel_file(cur, fp, thread_id, thread_name, attachments_dir, channel_type=11)
             total_msgs += count
         err(f"  Threads: {len(thread_files)} files loaded")
 

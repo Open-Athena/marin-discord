@@ -203,7 +203,85 @@ def collect_thread_ids(archive_dir):
     return threads
 
 
-async def run(guild_id, out_dir, download_att, fetch_threads):
+async def backfill_attachments(session, out_dir, attachments_dir):
+    """Download missing attachments by re-fetching messages from the API for fresh CDN URLs."""
+    attachments_dir.mkdir(exist_ok=True)
+    total = 0
+    downloaded = 0
+    failed = 0
+    skipped = 0
+
+    # Collect all message IDs with missing attachments, grouped by channel
+    missing_by_channel: dict[str, list[dict]] = {}
+    json_files = sorted(out_dir.glob("*.json"))
+    threads_dir = out_dir / "threads"
+    if threads_dir.is_dir():
+        json_files += sorted(threads_dir.glob("*.json"))
+
+    for f in json_files:
+        if f.name == "index.json":
+            continue
+        messages = json.loads(f.read_text())
+        for msg in messages:
+            for att in msg.get("attachments", []):
+                if not att.get("url"):
+                    continue
+                total += 1
+                att_id = att["id"]
+                filename = att.get("filename", "unknown")
+                if (attachments_dir / f"{att_id}_{filename}").exists():
+                    skipped += 1
+                    continue
+                ch_id = msg.get("channel_id")
+                if ch_id:
+                    missing_by_channel.setdefault(ch_id, []).append(msg)
+
+    missing_count = total - skipped
+    if not missing_count:
+        err("All attachments already downloaded")
+        return
+
+    err(f"Need to download {missing_count} attachments across {len(missing_by_channel)} channels")
+
+    # Re-fetch each message individually to get fresh CDN URLs
+    seen_msgs: set[str] = set()
+    for ch_id, msgs in missing_by_channel.items():
+        for msg in msgs:
+            msg_id = msg["id"]
+            if msg_id in seen_msgs:
+                continue
+            seen_msgs.add(msg_id)
+
+            # Fetch fresh message from API
+            status, body, _ = await api_get(session, f"{BASE}/channels/{ch_id}/messages/{msg_id}")
+            if status != 200:
+                err(f"  msg {msg_id}: HTTP {status}")
+                for att in msg.get("attachments", []):
+                    att_id = att["id"]
+                    filename = att.get("filename", "unknown")
+                    if not (attachments_dir / f"{att_id}_{filename}").exists():
+                        failed += 1
+                continue
+
+            fresh_msg = json.loads(body)
+            for att in fresh_msg.get("attachments", []):
+                att_id = att["id"]
+                filename = att.get("filename", "unknown")
+                if (attachments_dir / f"{att_id}_{filename}").exists():
+                    continue
+                if await download_attachment(session, att, attachments_dir):
+                    downloaded += 1
+                else:
+                    failed += 1
+
+            if (downloaded + failed) % 50 == 0 and (downloaded + failed) > 0:
+                err(f"  progress: {downloaded} downloaded, {failed} failed, {skipped} skipped / {total} total")
+            await asyncio.sleep(0.3)
+
+    err(f"Backfill complete: {downloaded} downloaded, {failed} failed, {skipped} already existed, {total} total")
+
+
+async def run(guild_id, out_dir, download_att, fetch_threads, backfill_att=False):
     token = os.environ["DISCORD_TOKEN"]
     headers = {
         "Authorization": f"Bot {token}",
@@ -264,17 +342,25 @@ async def run(guild_id, out_dir, download_att, fetch_threads):
             total_att += thread_att
 
         err(f"\nTotal: {total_new} new messages, {total_att} attachments")
+
+        # Phase 3: backfill attachments from all archived messages
+        if backfill_att:
+            err(f"\nBackfilling attachments...")
+            att_dir = out_dir / "attachments"
+            await backfill_attachments(session, out_dir, att_dir)
+
         err(f"Output: {out_dir}/")
 
 
 @command()
 @option('-A', '--no-attachments', is_flag=True, help='Skip downloading attachments')
+@option('-b', '--backfill-attachments', is_flag=True, help='Download all missing attachments from existing archive')
 @option('-g', '--guild', default=DEFAULT_GUILD, help='Guild (server) ID')
 @option('-o', '--out-dir', default='archive', help='Output directory for JSON files')
 @option('-T', '--no-threads', is_flag=True, help='Skip fetching thread messages')
-def main(guild, no_attachments, no_threads, out_dir):
+def main(guild, no_attachments, backfill_attachments, no_threads, out_dir):
     """Archive all messages from a Discord guild."""
-    asyncio.run(run(guild, out_dir, not no_attachments, not no_threads))
+    asyncio.run(run(guild, out_dir, not no_attachments, not no_threads, backfill_attachments))
 
 
 if __name__ == "__main__":
