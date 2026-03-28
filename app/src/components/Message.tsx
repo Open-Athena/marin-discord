@@ -215,6 +215,15 @@ export default function MessageComponent({ message, compact, targeted, onNavigat
                         width={w}
                         height={h}
                         loading="lazy"
+                        onError={e => {
+                          const el = e.currentTarget
+                          const link = el.parentElement as HTMLAnchorElement
+                          // Replace with filename placeholder
+                          link.replaceWith(Object.assign(document.createElement('div'), {
+                            className: 'attachment-expired',
+                            textContent: `📎 ${att.filename} (expired)`,
+                          }))
+                        }}
                       />
                     </a>
                   )
@@ -230,40 +239,42 @@ export default function MessageComponent({ message, compact, targeted, onNavigat
 
           {message.embeds.length > 0 && (
             <div className="embeds">
-              {message.embeds.map((embed, i) => (
-                <div key={i} className="embed">
-                  {embed.title && (
-                    <div className="embed-title">
-                      {embed.url ? (
-                        <a href={embed.url} target="_blank" rel="noopener noreferrer">{embed.title}</a>
-                      ) : embed.title}
+              {message.embeds
+                .filter(e => e.title || e.description)
+                .map((embed, i) => {
+                  // For article/link embeds, show image as small thumbnail on the right
+                  const isArticle = embed.type === 'article' || embed.type === 'link'
+                  const thumbSrc = embed.thumbnail_url || (isArticle ? embed.image_url : null)
+                  const largeSrc = isArticle ? null : embed.image_url
+                  return (
+                    <div key={i} className={`embed${isArticle ? ' embed-article' : ''}`}>
+                      <div className="embed-body">
+                        {embed.title && (
+                          <div className="embed-title">
+                            {embed.url ? (
+                              <a href={embed.url} target="_blank" rel="noopener noreferrer">{embed.title}</a>
+                            ) : embed.title}
+                          </div>
+                        )}
+                        {embed.description && (
+                          <div className="embed-description">{embed.description}</div>
+                        )}
+                      </div>
+                      {thumbSrc && (() => {
+                        const img = <img className="embed-thumbnail" src={thumbSrc} alt="" loading="lazy" />
+                        return embed.url
+                          ? <a href={embed.url} target="_blank" rel="noopener noreferrer">{img}</a>
+                          : img
+                      })()}
+                      {largeSrc && (() => {
+                        const img = <img className="embed-image" src={largeSrc} alt="" loading="lazy" />
+                        return embed.url
+                          ? <a href={embed.url} target="_blank" rel="noopener noreferrer">{img}</a>
+                          : img
+                      })()}
                     </div>
-                  )}
-                  {embed.description && (
-                    <div className="embed-description">{embed.description}</div>
-                  )}
-                  {embed.thumbnail_url && (() => {
-                    // Reserve space: constrain to max 80x80 for thumbnails
-                    const tw = Math.min(embed.thumbnail_width || 80, 80)
-                    const th = Math.min(embed.thumbnail_height || 80, 80)
-                    const img = <img className="embed-thumbnail" src={embed.thumbnail_url} alt="" width={tw} height={th} loading="lazy" />
-                    return embed.url
-                      ? <a href={embed.url} target="_blank" rel="noopener noreferrer">{img}</a>
-                      : img
-                  })()}
-                  {embed.image_url && (() => {
-                    // Reserve space for embed images
-                    const maxW = 400, maxH = 300
-                    let w = embed.thumbnail_width || maxW, h = embed.thumbnail_height || maxH
-                    if (w > maxW) { h = Math.round(h * maxW / w); w = maxW }
-                    if (h > maxH) { w = Math.round(w * maxH / h); h = maxH }
-                    const img = <img className="embed-image" src={embed.image_url} alt="" width={w} height={h} loading="lazy" />
-                    return embed.url
-                      ? <a href={embed.url} target="_blank" rel="noopener noreferrer">{img}</a>
-                      : img
-                  })()}
-                </div>
-              ))}
+                  )
+                })}
             </div>
           )}
 

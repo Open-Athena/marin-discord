@@ -462,6 +462,14 @@
   text-decoration: underline;
 }
 
+.attachment-expired {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 /* Embeds */
 .embeds {
   margin-top: 4px;
@@ -499,9 +507,26 @@
   margin-bottom: 4px;
 }
 
-.embed-thumbnail,
+.embed-article {
+  display: flex;
+  gap: 12px;
+}
+.embed-article .embed-body {
+  flex: 1;
+  min-width: 0;
+}
+.embed-article .embed-thumbnail {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.embed-thumbnail {
+  max-width: 80px;
+  max-height: 80px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
 .embed-image {
-  max-width: 100%;
+  max-width: 400px;
   max-height: 300px;
   border-radius: 4px;
   margin-top: 4px;
