@@ -1,5 +1,5 @@
 /**
- * Marin Discord Archive API — Cloudflare Worker with D1.
+ * Discord Archive API — Cloudflare Worker with D1.
  *
  * Endpoints:
  *   GET /api/channels

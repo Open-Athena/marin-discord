@@ -20,7 +20,7 @@ import sys
 err = lambda *a, **kw: print(*a, file=sys.stderr, **kw)
 
 BASE = "https://discord.com/api/v10"
-DEFAULT_GUILD = "1354881461060243556"
+DEFAULT_GUILD = os.environ.get("DISCORD_GUILD", "")
 # Text-like channel types: text(0), announcement(5), public thread(11), private thread(12), announcement thread(10)
 TEXT_CHANNEL_TYPES = {0, 5, 10, 11, 12}
 
@@ -285,7 +285,7 @@ async def run(guild_id, out_dir, download_att, fetch_threads, backfill_att=False
     token = os.environ["DISCORD_TOKEN"]
     headers = {
         "Authorization": f"Bot {token}",
-        "User-Agent": "MarinBot (https://github.com/Open-Athena/marin-bot, 0.1)",
+        "User-Agent": "discord-archive (https://github.com/Open-Athena/marin-bot, 0.1)",
     }
 
     out_dir = Path(out_dir)
@@ -355,7 +355,7 @@ async def run(guild_id, out_dir, download_att, fetch_threads, backfill_att=False
 @command()
 @option('-A', '--no-attachments', is_flag=True, help='Skip downloading attachments')
 @option('-b', '--backfill-attachments', is_flag=True, help='Download all missing attachments from existing archive')
-@option('-g', '--guild', default=DEFAULT_GUILD, help='Guild (server) ID')
+@option('-g', '--guild', default=DEFAULT_GUILD, required=not DEFAULT_GUILD, help='Guild (server) ID, or set DISCORD_GUILD env var')
 @option('-o', '--out-dir', default='archive', help='Output directory for JSON files')
 @option('-T', '--no-threads', is_flag=True, help='Skip fetching thread messages')
 def main(guild, no_attachments, backfill_attachments, no_threads, out_dir):
