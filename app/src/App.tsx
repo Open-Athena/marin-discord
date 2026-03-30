@@ -1,4 +1,6 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { HotkeysProvider, ShortcutsModal, Omnibar, LookupModal, SequenceModal, SpeedDial, useAction, useActions } from 'use-kbd'
+import 'use-kbd/styles.css'
 import type { Channel } from './types'
 import { useChannels, useUsers } from './hooks'
 import { LookupContext } from './context'
@@ -17,7 +19,68 @@ function parseHash(): { channelId: string | null; messageId: string | null } {
   }
 }
 
-export default function App() {
+function useKeyboardNav({
+  channels,
+  activeChannel,
+  searchOpen,
+  onSelectChannel,
+  onToggleSearch,
+}: {
+  channels: Channel[]
+  activeChannel: Channel | null
+  searchOpen: boolean
+  onSelectChannel: (ch: Channel) => void
+  onToggleSearch: () => void
+}) {
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useAction('nav:search', {
+    label: 'Search messages',
+    group: 'Navigation',
+    defaultBindings: ['/'],
+    handler: () => {
+      onToggleSearch()
+      setTimeout(() => searchInputRef.current?.focus(), 50)
+    },
+  })
+
+  useAction('nav:channel-prev', {
+    label: 'Previous channel',
+    group: 'Navigation',
+    defaultBindings: ['alt+ArrowUp'],
+    handler: () => {
+      if (!channels.length) return
+      const idx = activeChannel ? channels.findIndex(c => c.id === activeChannel.id) : 0
+      const prev = channels[Math.max(0, idx - 1)]
+      if (prev) onSelectChannel(prev)
+    },
+  })
+
+  useAction('nav:channel-next', {
+    label: 'Next channel',
+    group: 'Navigation',
+    defaultBindings: ['alt+ArrowDown'],
+    handler: () => {
+      if (!channels.length) return
+      const idx = activeChannel ? channels.findIndex(c => c.id === activeChannel.id) : -1
+      const next = channels[Math.min(channels.length - 1, idx + 1)]
+      if (next) onSelectChannel(next)
+    },
+  })
+
+  useAction('ui:close', {
+    label: 'Close panel',
+    group: 'UI',
+    defaultBindings: ['Escape'],
+    handler: () => {
+      if (searchOpen) onToggleSearch()
+    },
+  })
+
+  return { searchInputRef }
+}
+
+function AppContent() {
   const { data: channels = [] } = useChannels()
   const { data: users = [] } = useUsers()
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
@@ -29,7 +92,6 @@ export default function App() {
     users: new Map(users.map(u => [u.id, u])),
   }), [channels, users])
 
-  // Parse hash on load and on hash changes
   const navigateToHash = useCallback(() => {
     if (!channels.length) return
     const { channelId, messageId } = parseHash()
@@ -40,9 +102,7 @@ export default function App() {
     }
   }, [channels])
 
-  useEffect(() => {
-    navigateToHash()
-  }, [navigateToHash])
+  useEffect(() => { navigateToHash() }, [navigateToHash])
 
   useEffect(() => {
     window.addEventListener('hashchange', navigateToHash)
@@ -62,6 +122,31 @@ export default function App() {
     }
     setTargetMessageId(messageId || null)
   }, [activeChannel])
+
+  const toggleSearch = useCallback(() => setSearchOpen(s => !s), [])
+
+  const { searchInputRef } = useKeyboardNav({
+    channels,
+    activeChannel,
+    searchOpen,
+    onSelectChannel: handleSelectChannel,
+    onToggleSearch: toggleSearch,
+  })
+
+  // Register each channel as an omnibar-searchable action
+  const channelActions = useMemo(() => {
+    const actions: Record<string, { label: string; group: string; keywords: string[]; handler: () => void }> = {}
+    for (const ch of channels) {
+      actions[`channel:${ch.id}`] = {
+        label: `#${ch.name}`,
+        group: 'Channels',
+        keywords: [ch.name, `#${ch.name}`],
+        handler: () => handleSelectChannel(ch),
+      }
+    }
+    return actions
+  }, [channels, handleSelectChannel])
+  useActions(channelActions)
 
   return (
     <LookupContext.Provider value={lookup}>
@@ -88,7 +173,7 @@ export default function App() {
             </div>
             <button
               className="search-toggle"
-              onClick={() => setSearchOpen(!searchOpen)}
+              onClick={toggleSearch}
             >
               Search
             </button>
@@ -107,12 +192,26 @@ export default function App() {
           </div>
           {searchOpen && (
             <SearchPanel
+              inputRef={searchInputRef}
               onNavigate={handleNavigate}
               onClose={() => setSearchOpen(false)}
             />
           )}
         </div>
       </div>
+      <ShortcutsModal />
+      <Omnibar placeholder="Go to channel or command..." />
+      <LookupModal />
+      <SequenceModal />
+      <SpeedDial />
     </LookupContext.Provider>
+  )
+}
+
+export default function App() {
+  return (
+    <HotkeysProvider>
+      <AppContent />
+    </HotkeysProvider>
   )
 }

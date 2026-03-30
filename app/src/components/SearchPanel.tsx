@@ -1,17 +1,19 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { useSearch } from '../hooks'
 import { useLookup } from '../context'
 
 interface Props {
+  inputRef?: RefObject<HTMLInputElement | null>
   onNavigate: (channelId: string, messageId: string) => void
   onClose: () => void
 }
 
-export default function SearchPanel({ onNavigate, onClose }: Props) {
+export default function SearchPanel({ inputRef: externalRef, onNavigate, onClose }: Props) {
   const lookup = useLookup()
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const internalRef = useRef<HTMLInputElement>(null)
+  const inputRef = externalRef || internalRef
 
   useEffect(() => {
     inputRef.current?.focus()
