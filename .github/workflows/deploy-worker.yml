@@ -2,7 +2,7 @@ name: Deploy Worker API
 on:
   push:
     branches: [main]
-    paths: [api/**]
+    paths: [api/wrangler.toml]
   workflow_dispatch:
 
 jobs:
@@ -10,19 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: Open-Athena/discord-agent/actions/deploy-worker@v1
         with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: api/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-        working-directory: api
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
-          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-          workingDirectory: api
+          cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          wrangler_toml: api/wrangler.toml

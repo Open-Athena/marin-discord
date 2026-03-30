@@ -12,74 +12,20 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    env:
-      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v5
-        with:
-          version: latest
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: api/pnpm-lock.yaml
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      # Pull existing archive from DVX cache
-      - run: dvx pull
-        env:
-          AWS_PROFILE: ""
-
-      # Fetch new messages from Discord (incremental)
-      - run: uv run archive.py
-
-      # Rebuild SQLite from JSON
-      - run: uv run build_db.py
-
-      # Update DVX cache with new archive
-      - run: dvx add archive
-      - run: dvx push
-        env:
-          AWS_PROFILE: ""
-
-      - run: pnpm install --frozen-lockfile
-        working-directory: api
-
-      # Import to D1
-      - name: Incremental D1 sync
-        if: ${{ !inputs.full_reimport }}
-        working-directory: api
-        run: uv run d1-sync.py --remote
-        env:
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-
-      - name: Full D1 reimport
-        if: ${{ inputs.full_reimport }}
-        working-directory: api
-        run: ./d1-import.sh --remote ../archive.db
-        env:
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-
-      # Commit updated archive.dvc if changed
-      - name: Commit archive update
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet archive.dvc; then
-            echo "No archive changes"
-          else
-            git add archive.dvc
-            git commit -m "Update archive $(date -u +%Y-%m-%d)"
-            git push
-          fi
+      - uses: Open-Athena/discord-agent/actions/update-archive@v1
+        with:
+          discord_token: ${{ secrets.DISCORD_TOKEN }}
+          cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          full_reimport: ${{ inputs.full_reimport }}
+          wrangler_toml: api/wrangler.toml
