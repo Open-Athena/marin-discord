@@ -22,6 +22,6 @@ jobs:
         working-directory: api
       - uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
           command: deploy
           workingDirectory: api

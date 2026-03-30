@@ -26,6 +26,6 @@ jobs:
           VITE_API_BASE: ${{ vars.VITE_API_BASE }}
       - uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
           command: pages deploy dist --project-name marin-discord
           workingDirectory: app
