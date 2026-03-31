@@ -25,6 +25,7 @@ jobs:
 
       - uses: Open-Athena/discord-agent/actions/update-archive@v1
         with:
+          guild_id: ${{ vars.DISCORD_GUILD }}
           discord_token: ${{ secrets.DISCORD_TOKEN }}
           cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           full_reimport: ${{ inputs.full_reimport }}
