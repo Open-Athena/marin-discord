@@ -1,0 +1,5 @@
+- **MoE training** — Linear decay schedule confirmed +0.03 BPB gain; QB load balancing working across scales with 10-15% speedup; 1e22 (35B/A5B) run launched on v4-512, tracking close behind 1e23 dense Delphi
+- **Infra/Iris** — 4 Iris controller restarts through the week (one with DB state loss); us-central1 outage; `/babysit-job` Claude Code skill gaining adoption for auto-remediation of TPU failures; nested job path length bug in `/dev/shm`
+- **Data curation** — Debate on CPU-only synthetic data generation for arithmetic, regex, bash commands (~50k idle CPUs available on training nodes); OpenThoughts-3 dataset released with GLM 4.7; Chinese FineWeb-Edu dataset surfaced for review
+- **Scaling laws** — Chinchilla replication preprint published by Eric Czech; batch size scaling exponent discussion (α ≈ 0.57-0.67); willheld demoing early-loss → final-loss forecasting for de-risking large runs
+- **RL progress** — Ahmed confirmed Ray was root cause of long-running RL crashes; LoRA DPO + pipeline-parallel vLLM working with Qwen 225B; supply-chain security concern raised after litellm compromise

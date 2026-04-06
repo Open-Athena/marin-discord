@@ -1,0 +1,1 @@
+298 msgs, 15 contributors: MoE 1e22 run launched on v4-512 tracking close to dense baseline; Iris controller restarted 4x with DB recovery; Chinchilla scaling paper published; synthetic data generation strategy debated for arithmetic/agent capabilities.

@@ -1,0 +1,5 @@
+- **MoE scaling (95 msgs)**: Router vector alignment discovered (60% cosine sim in d3200); dead/underloaded experts investigated; Latent MoE hurts loss at small scale but may help GPU inference; Larry's LR prediction hits R²=0.995; team pivoting to isolate Latent MoE at 1e19 flops
+- **Infra (63 msgs)**: GCS storage costs ~$60k/mo driving checkpoint cleanup planning; Ray cluster instability on big-run slice; CI/CD failures on CoreWeave blocking PRs; Ray sunset in favor of Iris underway
+- **Scaling suite (18 msgs)**: 1e23 dense run completed with strong eval forecasting results despite training spikes; GPT-5 estimate sourcing discussed with Percy
+- **RL & post-training**: RL pipeline stable for 500+ steps on Iris (prev dying at ~200); automated alignment pipeline PR landed; SFT coding eval plan laid out for Marin 32B
+- **Community**: Greg Lindahl (Common Crawl CTO) joined; 28 new members; Llama 3 silent vLLM bug found and fixed (mistral sliding window misconfig)

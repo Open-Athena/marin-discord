@@ -1,0 +1,1 @@
+281 messages, 15 contributors. MoE scaling dominates: router alignment analysis, Latent MoE benchmarking, LR prediction (R²=0.995). RL pipeline validated on Iris. 1e23 dense scaling suite completed. GCS storage costs ($60k/mo) prompting cleanup.
