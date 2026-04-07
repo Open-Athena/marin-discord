@@ -1,0 +1,3 @@
+[submodule ".discord-agent"]
+	path = .discord-agent
+	url = https://github.com/Open-Athena/discord-agent

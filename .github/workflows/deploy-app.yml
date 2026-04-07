@@ -9,9 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Open-Athena/discord-agent/actions/deploy-app@v1
         with:
-          pages_project_name: ${{ vars.PAGES_PROJECT_NAME }}
-          vite_api_base: ${{ vars.VITE_API_BASE }}
-          cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
-          cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          submodules: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: .discord-agent/app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        shell: bash
+        working-directory: .discord-agent/app
+      - run: pnpm build
+        shell: bash
+        working-directory: .discord-agent/app
+        env:
+          VITE_API_BASE: ${{ vars.VITE_API_BASE }}
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name ${{ vars.PAGES_PROJECT_NAME }}
+          workingDirectory: .discord-agent/app
