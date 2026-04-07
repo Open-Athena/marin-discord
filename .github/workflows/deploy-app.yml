@@ -31,5 +31,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name ${{ vars.PAGES_PROJECT_NAME }}
+          command: pages deploy dist --project-name ${{ vars.PAGES_PROJECT_NAME }} --branch main
           workingDirectory: .discord-agent/app
