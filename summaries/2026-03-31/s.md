@@ -1,5 +1,11 @@
-- **MoE scaling (95 msgs)**: Router vector alignment discovered (60% cosine sim in d3200); dead/underloaded experts investigated; Latent MoE hurts loss at small scale but may help GPU inference; Larry's LR prediction hits R²=0.995; team pivoting to isolate Latent MoE at 1e19 flops
-- **Infra (63 msgs)**: GCS storage costs ~$60k/mo driving checkpoint cleanup planning; Ray cluster instability on big-run slice; CI/CD failures on CoreWeave blocking PRs; Ray sunset in favor of Iris underway
-- **Scaling suite (18 msgs)**: 1e23 dense run completed with strong eval forecasting results despite training spikes; GPT-5 estimate sourcing discussed with Percy
-- **RL & post-training**: RL pipeline stable for 500+ steps on Iris (prev dying at ~200); automated alignment pipeline PR landed; SFT coding eval plan laid out for Marin 32B
-- **Community**: Greg Lindahl (Common Crawl CTO) joined; 28 new members; Llama 3 silent vLLM bug found and fixed (mistral sliding window misconfig)
+- **MoE Scaling & Architecture** — The week's most active workstream by far.
+- **Infrastructure** — Russell Power restarted the cluster early in the week.
+- **Scaling Suite** — The 1e23 dense run completed, with willheld sharing forecasting results that look strong despite training spikes — dlwh called it "truly incredible." willheld speculated there may be small-scale phenomena that predict later spikes.
+- **Reinforcement Learning** — Ahmed celebrated the RL pipeline running stable for 500+ steps on Iris — previously dying around 200 steps (marin-community/marin#2385).
+- **Code Talk** — Ahmed found a silent bug affecting all Llama 3 models on vLLM — checkpoints were being read as Mistral models, triggering sliding window attention at context >4096.
+- **Code Review** — Key PRs: Ahmed's automated alignment pipeline and RL-to-Iris migration; Michael Ryan's Qwen3.5 model support for Levanter; Russell's Iris priorities and breadcrumb docs experiments; Ahmed's CPU VMs for TPU zones.
+- **SFT & Agents** — Ahmed and Kevin Xiang Li laid out a plan for evaluating Marin 32B on coding tasks (SWE-Bench, Terminal Bench 2) post-training, bracketing model performance in ascending order of training time.
+- **Scaling Laws** — Eric Czech investigated why Delphi's Approach 2 loss forecasts were so accurate despite the team's own paper suggesting Approach 2 shouldn't be used, comparing against Approach 3 and Llama 3 as reference.
+- **Data Mixing** — yurusankyo shared updated GRP convergence plots as sample counts increase.
+- **Community** — Notable new members: Greg Lindahl (CTO, Common Crawl Foundation — 20 reactions); Nathan TeBlunthuis (UT Austin, studying open AI governance); Swagatam (ELLIS Tübingen, MoE scaling laws for OpenEuroLLM); Duck Quang (MIT CSAIL); Allen (CS336 student).
+- **News & Research** — 6 items
