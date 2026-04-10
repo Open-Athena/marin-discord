@@ -6,8 +6,8 @@ on:
         description: Full reimport (drop + recreate) instead of incremental update
         type: boolean
         default: false
-  # schedule:
-  #   - cron: '0 8 * * *'  # Daily at 8am UTC
+  schedule:
+    - cron: '0 8 * * *'  # Daily at 8am UTC
 
 jobs:
   update:
@@ -31,3 +31,6 @@ jobs:
           cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           full_reimport: ${{ inputs.full_reimport }}
           wrangler_toml: api/wrangler.toml
+
+      - name: Upload archive.db to S3
+        run: aws s3 cp archive.db s3://openathena/marin-discord/archive.db
