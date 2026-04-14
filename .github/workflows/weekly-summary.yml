@@ -68,7 +68,7 @@ jobs:
       - name: Post to Discord/Slack
         if: ${{ inputs.post == true || github.event_name == 'schedule' }}
         run: |
-          python3 - <<'EOF'
+          uv run --with 'click' --with 'thrds>=0.2.0' python - <<'EOF'
           import os, json, re, sys
           sys.path.insert(0, '.discord-agent')
           from summarize import (
