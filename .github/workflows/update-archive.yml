@@ -34,3 +34,40 @@ jobs:
 
       - name: Upload archive.db to S3
         run: aws s3 cp archive.db s3://openathena/marin-discord/archive.db
+
+      - name: Write run summary
+        run: |
+          python3 - <<'EOF' >> $GITHUB_STEP_SUMMARY
+          import sqlite3, os
+          db = sqlite3.connect('archive.db')
+          db.row_factory = sqlite3.Row
+          total_msgs = db.execute('SELECT COUNT(*) FROM messages').fetchone()[0]
+          total_channels = db.execute("SELECT COUNT(*) FROM channels WHERE type = 0").fetchone()[0]
+          total_users = db.execute('SELECT COUNT(*) FROM users').fetchone()[0]
+          total_threads = db.execute('SELECT COUNT(*) FROM threads').fetchone()[0]
+          # Last 24h activity
+          recent = db.execute("""
+              SELECT c.name, COUNT(m.id) as n
+              FROM messages m JOIN channels c ON m.channel_id = c.id
+              WHERE m.timestamp >= datetime('now', '-24 hours')
+              GROUP BY c.id ORDER BY n DESC LIMIT 10
+          """).fetchall()
+          recent_total = sum(r['n'] for r in recent)
+
+          print(f"# Archive Update Summary")
+          print()
+          print(f"- **Total messages**: {total_msgs:,}")
+          print(f"- **Channels**: {total_channels}")
+          print(f"- **Users**: {total_users:,}")
+          print(f"- **Threads**: {total_threads:,}")
+          print()
+          print(f"## Last 24h ({recent_total} messages)")
+          print()
+          if recent:
+              print("| Channel | Messages |")
+              print("|---------|----------|")
+              for r in recent:
+                  print(f"| #{r['name']} | {r['n']} |")
+          else:
+              print("_No new messages in the last 24h._")
+          EOF
