@@ -53,15 +53,17 @@ jobs:
             echo "week=$WEEK" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate summary
+      - name: Generate summary (if not already present)
         run: |
-          mkdir -p summaries/${{ steps.week.outputs.week }}
-          .discord-agent/summarize.py \
-            --db-path archive.db \
-            --viewer-base https://marin-discord.pages.dev \
-            --guild-id ${{ vars.DISCORD_GUILD }} \
-            --week ${{ steps.week.outputs.week }} \
-            -o summaries/${{ steps.week.outputs.week }}
+          WEEK=${{ steps.week.outputs.week }}
+          if [ -f "summaries/$WEEK/xs.md" ]; then
+            echo "Summary already present for $WEEK, skipping regeneration"
+          else
+            # TODO: needs `claude` CLI or Anthropic API key on runner;
+            # for now, pre-generate summaries locally and commit them.
+            echo "::error::summaries/$WEEK/ not found; generate locally first"
+            exit 1
+          fi
 
       - name: Post to Discord/Slack
         if: ${{ inputs.post == true || github.event_name == 'schedule' }}
