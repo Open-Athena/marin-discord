@@ -1,0 +1,11 @@
+- **Ray→Iris migration & cluster ops** — Ray workers being reduced ahead of month-end cutover; multiple central2 restarts, scheduler fix deployed, rohithck calls Iris dashboard "a breath of fresh air".
+- **GCS storage cleanup** — $60k/mo spend prompted targeted deletion of stale checkpoints with 3-day soft-delete safety net; block-shuffle reminder for sweeps.
+- **Tokenization & scheduling pain** — willheld's 5000-shard job death-looping on one bad shard; filed issues #4575/#4577/#4578 around worker cleanup and shard discovery.
+- **MoE progress** — Latent MoE ~2% bpb worse at d1024 (Pranshu); Larry's PR #4636 catches grug MoE up to main with a metrics leaderboard to climb.
+- **SWE-ZERO & data curation** — Kevin Xiang Li rolled out 1k SWE-ZERO trajectories with 87.4% bash diversity; Percy wants to adapt BeyondWeb ideas to finite-compute regime.
+- **Data mixing scaling** — yurusankyo's predicted optimal mixtures now sparser and extrapolate well without regularization (std ~0.0014 BPB).
+- **SFT & online distillation** — willheld names online distillation his #1 desired RL feature; nato asks if tinker supports it yet.
+- **Code reviews** — LoRA-DPO support (#4637), native Llama whitespace protection port (#4600), better Iris task info (#4629).
+- **JAX 0.9.2 migration scoping** — romain exploring upgrade on top of Ahmed's vllm/tup work; Pranshu's earlier revert was Mixtral MFU regression.
+- **New members** — Vivien Cheng (Stanford MS→PhD, kernels/linear attention), Ty Feng (TRC user, RL infra), Chris (robotics→FMs), Sri.
+- **News & Research** — Meta MSL's Muse-Spark, Tristan's new paper, PathMoE (shared router weights).
