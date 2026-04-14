@@ -1,0 +1,229 @@
+name: Weekly Summary
+on:
+  workflow_dispatch:
+    inputs:
+      week:
+        description: Week start date (Monday), YYYY-MM-DD. Default - last completed week.
+        type: string
+        required: false
+      post:
+        description: Post to Discord/Slack (otherwise dry-run, just commit files)
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 9 * * 2'  # Tuesdays at 9am UTC
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Pull archive.db from S3
+        run: aws s3 cp s3://openathena/marin-discord/archive.db archive.db
+
+      - name: Compute week
+        id: week
+        run: |
+          if [ -n "${{ inputs.week }}" ]; then
+            echo "week=${{ inputs.week }}" >> $GITHUB_OUTPUT
+          else
+            # Last completed week (Monday of the week that ended most recently)
+            # If today is Tuesday, we want the Monday 8 days ago (covering Mon-Sun)
+            WEEK=$(python3 -c "
+          from datetime import datetime, timedelta
+          today = datetime.utcnow()
+          days_since_mon = today.weekday()
+          last_sunday = today - timedelta(days=days_since_mon + 1)
+          last_monday = last_sunday - timedelta(days=6)
+          print(last_monday.strftime('%Y-%m-%d'))
+          ")
+            echo "week=$WEEK" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate summary
+        run: |
+          mkdir -p summaries/${{ steps.week.outputs.week }}
+          .discord-agent/summarize.py \
+            --db-path archive.db \
+            --viewer-base https://marin-discord.pages.dev \
+            --guild-id ${{ vars.DISCORD_GUILD }} \
+            --week ${{ steps.week.outputs.week }} \
+            -o summaries/${{ steps.week.outputs.week }}
+
+      - name: Post to Discord/Slack
+        if: ${{ inputs.post == true || github.event_name == 'schedule' }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, re, sys
+          sys.path.insert(0, '.discord-agent')
+          from summarize import (
+              md_to_mrkdwn, format_week_title, load_channel_map, viewer_to_discord_links,
+          )
+          from thrds import DiscordClient, SlackClient, LinkedThread, Section
+          from pathlib import Path
+
+          week = "${{ steps.week.outputs.week }}"
+          guild_id = os.environ["DISCORD_GUILD"]
+          d_channel = os.environ["DISCORD_POST_CHANNEL"]
+          s_channel = os.environ["SLACK_POST_CHANNEL"]
+
+          discord = DiscordClient(token=os.environ["DISCORD_TOKEN"], channel_id=d_channel, guild_id=guild_id)
+          slack = SlackClient(token=os.environ["SLACK_TOKEN"], channel=s_channel)
+          channel_map = load_channel_map("archive.db")
+
+          d = Path(f"summaries/{week}")
+          meta = json.loads((d / "meta.json").read_text()) if (d / "meta.json").exists() else {}
+          xs_md = (d / "xs.md").read_text().strip()
+          s_md = (d / "s.md").read_text().strip()
+          m_md = (d / "m.md").read_text().strip()
+
+          # Parse sections from M
+          m_discord = viewer_to_discord_links(m_md, "https://marin-discord.pages.dev", guild_id)
+          raw_sections = re.split(r"^## ", m_discord, flags=re.MULTILINE)
+          s_bullets = [l for l in s_md.split("\n") if l.startswith("- **")]
+
+          def build_sections(text):
+              raw = re.split(r"^## ", text, flags=re.MULTILINE)
+              secs = []
+              for sec in raw:
+                  if not sec.strip():
+                      continue
+                  lines = sec.strip().split("\n")
+                  title = re.sub(r"^<#\d+> — ", "", lines[0]).strip()
+                  body = "## " + sec.strip()
+                  summary = ""
+                  for b in s_bullets:
+                      bm = re.match(r"^- \*\*(.+?)\*\* — (.+)", b)
+                      if bm and bm.group(1).strip().lower() == title.lower():
+                          summary = bm.group(2)
+                          break
+                  secs.append(Section(title=title, summary=summary, body=body))
+              return secs
+
+          # --- Discord ---
+          # Post/edit XS as the thread parent (channel message)
+          title_text = f"# Weekly Digest: {format_week_title(week)}\n{xs_md}"
+          xs_id = meta.get("messages", {}).get("xs")
+          existing_xs = meta.get("discord", {}).get("messages", {}).get("xs") or meta.get("messages", {}).get("xs")
+          existing_thread = meta.get("discord", {}).get("thread_id") or meta.get("thread_id")
+          if existing_xs and existing_thread:
+              xs_id = existing_xs
+              thread_id = existing_thread
+              discord._suppress_embeds = True
+              discord._curl("PATCH", f"/channels/{d_channel}/messages/{xs_id}",
+                            {"content": title_text, "flags": 4})
+              discord._suppress_embeds = False
+          else:
+              # New post: XS in channel, create thread from it
+              msg = discord.post(title_text)
+              xs_id = msg.id
+              thread_id = discord.create_thread(xs_id, f"Weekly Digest: {format_week_title(week)}")
+
+          d_sections = build_sections(m_discord)
+          d_linked = LinkedThread(summary_prefix="", sections=d_sections)
+          dr = discord.sync_linked(d_linked, thread_id=thread_id, suppress_embeds=True, pace=10)
+          print(f"Discord: {len(dr.summary_ids)} summary, {len(dr.detail_ids)} detail")
+
+          # --- Slack ---
+          slack_sections = []
+          raw_md_sections = re.split(r"^## ", m_md, flags=re.MULTILINE)
+          for i, sec in enumerate(d_sections):
+              if i + 1 < len(raw_md_sections):
+                  slack_body = md_to_mrkdwn("## " + raw_md_sections[i + 1].strip(), channel_map)
+              else:
+                  slack_body = md_to_mrkdwn(sec.body, channel_map)
+              slack_sections.append(Section(title=sec.title, summary=sec.summary, body=slack_body))
+
+          xs_slack = f"*Weekly Digest: {format_week_title(week)}*\n{md_to_mrkdwn(xs_md, channel_map)}"
+          s_linked = LinkedThread(summary_prefix=xs_slack, sections=slack_sections)
+          slack_thread_ts = meta.get("slack", {}).get("thread_ts")
+          sr = slack.sync_linked(s_linked, thread_ts=slack_thread_ts, pace=1)
+          print(f"Slack: {len(sr.summary_ids)} summary, {len(sr.detail_ids)} detail")
+
+          # Compute stats from the archive DB, matching summarize.py semantics
+          import sqlite3
+          from datetime import datetime, timedelta
+          week_dt = datetime.strptime(week, "%Y-%m-%d")
+          end_dt = week_dt + timedelta(days=6, hours=23, minutes=59, seconds=59)
+          start_s = week_dt.strftime("%Y-%m-%d")
+          end_s = end_dt.strftime("%Y-%m-%d") + "T23:59:59"
+          sdb = sqlite3.connect("archive.db")
+          rows = sdb.execute("""
+              SELECT c.id, COUNT(m.id) as n FROM messages m
+              JOIN channels c ON m.channel_id = c.id
+              WHERE m.timestamp >= ? AND m.timestamp < ? AND c.type != 11
+              GROUP BY c.id
+          """, (start_s, end_s)).fetchall()
+          total_msgs = sum(r[1] for r in rows)
+          contributors = sdb.execute("""
+              SELECT COUNT(DISTINCT m.author_id) FROM messages m
+              JOIN channels c ON m.channel_id = c.id
+              WHERE m.timestamp >= ? AND m.timestamp < ? AND c.type != 11
+          """, (start_s, end_s)).fetchone()[0]
+          num_channels = len([r for r in rows if r[1] > 0])
+          sdb.close()
+
+          # Save meta
+          meta = {
+              "week": week,
+              "title": f"Weekly Digest: {format_week_title(week)}",
+              "stats": {
+                  "total_msgs": total_msgs,
+                  "contributors": contributors,
+                  "channels": num_channels,
+              },
+              "discord": {
+                  "channel_id": d_channel,
+                  "thread_id": thread_id,
+                  "messages": {"xs": xs_id, "s": dr.summary_ids, "m": dr.detail_ids},
+              },
+              "slack": {
+                  "channel_id": s_channel,
+                  "thread_ts": sr.thread_id,
+                  "messages": {"xs": sr.thread_id, "s": sr.summary_ids, "m": sr.detail_ids},
+              },
+          }
+          (d / "meta.json").write_text(json.dumps(meta, indent=2) + "\n")
+          EOF
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
+          DISCORD_POST_CHANNEL: ${{ vars.DISCORD_POST_CHANNEL }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_POST_CHANNEL: ${{ vars.SLACK_POST_CHANNEL }}
+
+      - name: Commit summary
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add summaries/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Weekly summary: ${{ steps.week.outputs.week }}"
+            git push
+          fi
+
+      - name: Write run summary
+        run: |
+          WEEK=${{ steps.week.outputs.week }}
+          echo "# Weekly Summary: $WEEK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## XS" >> $GITHUB_STEP_SUMMARY
+          cat summaries/$WEEK/xs.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## S" >> $GITHUB_STEP_SUMMARY
+          cat summaries/$WEEK/s.md >> $GITHUB_STEP_SUMMARY
