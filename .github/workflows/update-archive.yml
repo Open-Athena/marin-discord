@@ -23,8 +23,9 @@ jobs:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      - uses: Open-Athena/discord-agent/actions/update-archive@v1
+      - uses: Open-Athena/discord-agent/actions/update-archive@marin
         with:
+          ref: marin
           guild_id: ${{ vars.DISCORD_GUILD }}
           discord_token: ${{ secrets.DISCORD_TOKEN }}
           cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
