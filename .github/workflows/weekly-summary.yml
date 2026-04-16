@@ -54,15 +54,16 @@ jobs:
           fi
 
       - name: Generate summary (if not already present)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
+          VIEWER_BASE: https://marin-discord.pages.dev
         run: |
           WEEK=${{ steps.week.outputs.week }}
           if [ -f "summaries/$WEEK/xs.md" ]; then
             echo "Summary already present for $WEEK, skipping regeneration"
           else
-            # TODO: needs `claude` CLI or Anthropic API key on runner;
-            # for now, pre-generate summaries locally and commit them.
-            echo "::error::summaries/$WEEK/ not found; generate locally first"
-            exit 1
+            .discord-agent/summarize.py -w "$WEEK" -o "summaries/$WEEK"
           fi
 
       - name: Post to Discord/Slack
