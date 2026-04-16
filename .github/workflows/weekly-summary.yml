@@ -10,6 +10,22 @@ on:
         description: Post to Discord/Slack (otherwise dry-run, just commit files)
         type: boolean
         default: false
+      force_regen:
+        description: Regenerate summary even if files already exist
+        type: boolean
+        default: false
+      discord_channel:
+        description: Discord channel ID override (default - vars.DISCORD_POST_CHANNEL)
+        type: string
+        required: false
+      slack_channel:
+        description: Slack channel/user ID override (default - vars.SLACK_POST_CHANNEL)
+        type: string
+        required: false
+      commit_branch:
+        description: Branch to push to. "auto" - debug/<week>-<run_id>. Empty - main.
+        type: string
+        required: false
   schedule:
     - cron: '0 9 * * 2'  # Tuesdays at 9am UTC
 
@@ -60,7 +76,7 @@ jobs:
           VIEWER_BASE: https://marin-discord.pages.dev
         run: |
           WEEK=${{ steps.week.outputs.week }}
-          if [ -f "summaries/$WEEK/xs.md" ]; then
+          if [ -f "summaries/$WEEK/xs.md" ] && [ "${{ inputs.force_regen }}" != "true" ]; then
             echo "Summary already present for $WEEK, skipping regeneration"
           else
             .discord-agent/summarize.py -w "$WEEK" -o "summaries/$WEEK"
@@ -204,19 +220,31 @@ jobs:
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
-          DISCORD_POST_CHANNEL: ${{ vars.DISCORD_POST_CHANNEL }}
+          DISCORD_POST_CHANNEL: ${{ inputs.discord_channel || vars.DISCORD_POST_CHANNEL }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          SLACK_POST_CHANNEL: ${{ vars.SLACK_POST_CHANNEL }}
+          SLACK_POST_CHANNEL: ${{ inputs.slack_channel || vars.SLACK_POST_CHANNEL }}
 
       - name: Commit summary
         run: |
+          WEEK=${{ steps.week.outputs.week }}
+          BRANCH="${{ inputs.commit_branch }}"
+          if [ "$BRANCH" = "auto" ]; then
+            BRANCH="debug/$WEEK-${{ github.run_id }}"
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add summaries/
           if git diff --cached --quiet; then
             echo "No changes"
+            exit 0
+          fi
+          if [ -n "$BRANCH" ]; then
+            git checkout -b "$BRANCH"
+            git commit -m "Weekly summary (debug): $WEEK"
+            git push -u origin "$BRANCH"
+            echo "Pushed to branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
           else
-            git commit -m "Weekly summary: ${{ steps.week.outputs.week }}"
+            git commit -m "Weekly summary: $WEEK"
             git push
           fi
 
@@ -225,6 +253,22 @@ jobs:
           WEEK=${{ steps.week.outputs.week }}
           echo "# Weekly Summary: $WEEK" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "summaries/$WEEK/usage.json" ]; then
+            python3 - <<EOF >> $GITHUB_STEP_SUMMARY
+          import json
+          u = json.load(open("summaries/$WEEK/usage.json"))
+          print(f"## API usage")
+          print(f"- Model: \`{u['model']}\`")
+          print(f"- Input tokens: {u['input_tokens']:,}")
+          print(f"- Output tokens: {u['output_tokens']:,}")
+          if u.get('cache_read_input_tokens'):
+              print(f"- Cache read tokens: {u['cache_read_input_tokens']:,}")
+          if u.get('cache_creation_input_tokens'):
+              print(f"- Cache write tokens: {u['cache_creation_input_tokens']:,}")
+          print(f"- **Cost: \${u['cost_usd']:.4f}**")
+          print()
+          EOF
+          fi
           echo "## XS" >> $GITHUB_STEP_SUMMARY
           cat summaries/$WEEK/xs.md >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
