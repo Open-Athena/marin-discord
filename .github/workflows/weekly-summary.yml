@@ -69,6 +69,62 @@ jobs:
             echo "week=$WEEK" >> $GITHUB_OUTPUT
           fi
 
+      - name: Resolve channel overrides
+        id: channels
+        if: ${{ inputs.post == true || github.event_name == 'schedule' }}
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          INPUT_DISCORD: ${{ inputs.discord_channel }}
+          INPUT_SLACK: ${{ inputs.slack_channel }}
+          DEFAULT_DISCORD: ${{ vars.DISCORD_POST_CHANNEL }}
+          DEFAULT_SLACK: ${{ vars.SLACK_POST_CHANNEL }}
+        run: |
+          python3 <<'PYEOF' >> $GITHUB_OUTPUT
+          import json, os, re, subprocess, urllib.request
+
+          def discord_resolve(name_or_id, guild_id, token):
+              if not name_or_id or name_or_id.isdigit():
+                  return name_or_id
+              name = name_or_id.lstrip('#')
+              req = urllib.request.Request(
+                  f"https://discord.com/api/v10/guilds/{guild_id}/channels",
+                  headers={"Authorization": f"Bot {token}", "User-Agent": "MarinBot/1.0"},
+              )
+              for ch in json.loads(urllib.request.urlopen(req).read()):
+                  if ch["name"] == name:
+                      print(f"Resolved Discord #{name} → {ch['id']}", file=__import__('sys').stderr)
+                      return ch["id"]
+              raise ValueError(f"Discord channel '{name}' not found in guild")
+
+          def slack_resolve(name_or_id, token):
+              if not name_or_id or re.match(r'^[CDGUW]\w{8,}$', name_or_id):
+                  return name_or_id
+              name = name_or_id.lstrip('#')
+              req = urllib.request.Request(
+                  "https://slack.com/api/conversations.list?limit=999&types=public_channel,private_channel",
+                  headers={"Authorization": f"Bearer {token}"},
+              )
+              for ch in json.loads(urllib.request.urlopen(req).read()).get("channels", []):
+                  if ch["name"] == name:
+                      print(f"Resolved Slack #{name} → {ch['id']}", file=__import__('sys').stderr)
+                      return ch["id"]
+              raise ValueError(f"Slack channel '{name}' not found")
+
+          d = discord_resolve(
+              os.environ["INPUT_DISCORD"] or os.environ["DEFAULT_DISCORD"],
+              os.environ["DISCORD_GUILD"],
+              os.environ["DISCORD_TOKEN"],
+          )
+          s = slack_resolve(
+              os.environ["INPUT_SLACK"] or os.environ["DEFAULT_SLACK"],
+              os.environ["SLACK_TOKEN"],
+          )
+          print(f"discord={d}")
+          print(f"slack={s}")
+          PYEOF
+
       - name: Generate summary (if not already present)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -220,9 +276,9 @@ jobs:
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
-          DISCORD_POST_CHANNEL: ${{ inputs.discord_channel || vars.DISCORD_POST_CHANNEL }}
+          DISCORD_POST_CHANNEL: ${{ steps.channels.outputs.discord }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          SLACK_POST_CHANNEL: ${{ inputs.slack_channel || vars.SLACK_POST_CHANNEL }}
+          SLACK_POST_CHANNEL: ${{ steps.channels.outputs.slack }}
 
       - name: Commit summary
         run: |
