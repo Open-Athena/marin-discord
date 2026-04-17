@@ -12,3 +12,5 @@ port = 5273
 
 [vars]
 CORS_ORIGIN = "*"
+GUILD_ID = "1354881461060243556"
+ARCHIVE_DB_URL = "https://openathena.s3.amazonaws.com/marin-discord/archive.db"
