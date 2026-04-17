@@ -15,25 +15,17 @@ on:
         type: boolean
         default: false
       discord_channel:
-        description: Discord channel ID override (default - vars.DISCORD_POST_CHANNEL)
+        description: Discord channel name/ID. Empty - skip Discord post.
         type: string
         required: false
       slack_channel:
-        description: Slack channel/user ID override (default - vars.SLACK_POST_CHANNEL)
+        description: Slack channel name/ID. Empty - skip Slack post.
         type: string
         required: false
       commit_branch:
         description: Branch to push to. "auto" - debug/<week>-<run_id>. Empty - main.
         type: string
         required: false
-      skip_discord:
-        description: Skip Discord post (for Slack-only debug runs)
-        type: boolean
-        default: false
-      skip_slack:
-        description: Skip Slack post (for Discord-only debug runs)
-        type: boolean
-        default: false
   schedule:
     - cron: '0 9 * * 2'  # Tuesdays at 9am UTC
 
@@ -77,6 +69,22 @@ jobs:
             echo "week=$WEEK" >> $GITHUB_OUTPUT
           fi
 
+      - name: Restore summary from any branch (if present)
+        run: |
+          WEEK=${{ steps.week.outputs.week }}
+          if [ -f "summaries/$WEEK/xs.md" ]; then
+            echo "Already have summaries/$WEEK/ on current ref"
+            exit 0
+          fi
+          git fetch --quiet origin '+refs/heads/*:refs/remotes/origin/*'
+          SHA=$(git log --all --format=%H -- "summaries/$WEEK/xs.md" | head -1)
+          if [ -n "$SHA" ]; then
+            echo "Restoring summaries/$WEEK/ from $SHA"
+            git checkout "$SHA" -- "summaries/$WEEK/"
+          else
+            echo "No existing summary for $WEEK on any branch"
+          fi
+
       - name: Resolve channel overrides
         id: channels
         if: ${{ inputs.post == true || github.event_name == 'schedule' }}
@@ -84,15 +92,16 @@ jobs:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_GUILD: ${{ vars.DISCORD_GUILD }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          INPUT_DISCORD: ${{ inputs.discord_channel }}
-          INPUT_SLACK: ${{ inputs.slack_channel }}
-          DEFAULT_DISCORD: ${{ vars.DISCORD_POST_CHANNEL }}
-          DEFAULT_SLACK: ${{ vars.SLACK_POST_CHANNEL }}
+          # Scheduled runs always post to the configured production channels.
+          # Dispatch runs use the input verbatim — empty string means skip.
+          RAW_DISCORD: ${{ github.event_name == 'schedule' && vars.DISCORD_POST_CHANNEL || inputs.discord_channel }}
+          RAW_SLACK: ${{ github.event_name == 'schedule' && vars.SLACK_POST_CHANNEL || inputs.slack_channel }}
         run: |
           python3 <<'PYEOF' >> $GITHUB_OUTPUT
           import json, os, re, subprocess, urllib.request
 
           def discord_resolve(name_or_id, guild_id, token):
+              # Empty name_or_id = skip this platform (pass through)
               if not name_or_id or name_or_id.isdigit():
                   return name_or_id
               name = name_or_id.lstrip('#')
@@ -121,12 +130,12 @@ jobs:
               raise ValueError(f"Slack channel '{name}' not found")
 
           d = discord_resolve(
-              os.environ["INPUT_DISCORD"] or os.environ["DEFAULT_DISCORD"],
+              os.environ["RAW_DISCORD"],
               os.environ["DISCORD_GUILD"],
               os.environ["DISCORD_TOKEN"],
           )
           s = slack_resolve(
-              os.environ["INPUT_SLACK"] or os.environ["DEFAULT_SLACK"],
+              os.environ["RAW_SLACK"],
               os.environ["SLACK_TOKEN"],
           )
           print(f"discord={d}")
@@ -162,8 +171,8 @@ jobs:
           guild_id = os.environ["DISCORD_GUILD"]
           d_channel = os.environ["DISCORD_POST_CHANNEL"]
           s_channel = os.environ["SLACK_POST_CHANNEL"]
-          skip_discord = os.environ.get("SKIP_DISCORD") == "true"
-          skip_slack = os.environ.get("SKIP_SLACK") == "true"
+          skip_discord = not d_channel
+          skip_slack = not s_channel
 
           channel_map = load_channel_map("archive.db")
 
@@ -300,8 +309,6 @@ jobs:
           DISCORD_POST_CHANNEL: ${{ steps.channels.outputs.discord }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
           SLACK_POST_CHANNEL: ${{ steps.channels.outputs.slack }}
-          SKIP_DISCORD: ${{ inputs.skip_discord }}
-          SKIP_SLACK: ${{ inputs.skip_slack }}
 
       - name: Commit summary
         run: |
