@@ -10,8 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Open-Athena/discord-agent/actions/deploy-worker@v1
+      - uses: Open-Athena/discord-agent/actions/deploy-worker@marin
         with:
+          ref: marin
           cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           wrangler_toml: api/wrangler.toml
