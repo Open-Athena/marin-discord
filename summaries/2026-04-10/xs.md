@@ -1,0 +1,1 @@
+269 msgs, 15 contributors: Iris cluster manager saw heavy turbulence with multiple controller restarts & bug fixes; data mixing GRP method hits 1.036 BPB vs 1.069 Olmix baseline; 130B/A29B MoE run kicked off; LoRA-DPO & prompt_logprobs PRs landed.

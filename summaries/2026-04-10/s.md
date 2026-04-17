@@ -1,0 +1,11 @@
+- **Iris Infrastructure** — Multiple controller restarts to fix scheduling, preemption, and checkpoint bugs; prod dashboard launched at iris.oa.dev; Ray compute being wound down
+- **Iris Scheduling Bug** — Claude-introduced region registration bug broke hard-constraint scheduling; willheld fixed and Russell Power deployed migration overnight
+- **Data Mixing** — yurusankyo's GRP functional form achieves 1.036 BPB vs 1.069 Olmix; scaling experiments to 300M underway with good cross-scale correlation
+- **Levanter & vLLM** — Ahmed debugging LoRA-DPO divergence on v5p-8/v6e-8; rohithck got prompt_logprobs working in Marin's vLLM fork via Codex
+- **Code & Executor** — Multi-region executor issues flagged; create_actor TPU bug filed; dlwh suggests single-region for now
+- **MoE** — Larry's 130B/A29B run early results look good; quantile balancing blog published; chloe benchmarking grug vs Megatron on H100
+- **SFT & RL** — Online distillation identified as top RL priority; experience replay paper shared; Kevin Xiang Li shipped SWE-ZERO in Marin
+- **Automated Research** — Claude Code regression noted by multiple users; sleep loops killed, monitor agent stopped acting on failures
+- **Downstream Scaling** — New channel created by rohithck to track proxy evals project
+- **Community** — 11 new members joined; Ty Feng (TRC user), Chris, Bruno, Denis, and Kartik introduced themselves
+- **News & Research** — Papers on differentiable proxies, PathMoE, and experience replay shared; Larry's quantile balancing blog got wide praise
