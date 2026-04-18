@@ -36,6 +36,16 @@ jobs:
       - name: Upload archive.db to S3
         run: aws s3 cp archive.db s3://openathena/marin-discord/archive.db
 
+      # Mirror to R2 in parallel (zero-egress alternative). Once validated,
+      # the viewer's ARCHIVE_DB_URL will point here and the S3 step can drop.
+      - name: Mirror archive.db to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: aws s3 cp archive.db s3://marin-discord/archive.db --endpoint-url "$R2_ENDPOINT"
+
       - name: Write run summary
         run: |
           python3 - <<'EOF' >> $GITHUB_STEP_SUMMARY
