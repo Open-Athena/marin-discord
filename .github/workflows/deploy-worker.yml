@@ -2,7 +2,9 @@ name: Deploy Worker API
 on:
   push:
     branches: [main]
-    paths: [api/wrangler.toml]
+    paths:
+      - api/wrangler.toml
+      - .discord-agent
   workflow_dispatch:
 
 jobs:
