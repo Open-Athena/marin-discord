@@ -7,7 +7,7 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: '0 */3 * * *'  # Every 3 hours
+    - cron: '15 * * * *'  # Hourly at :15 (offset from CFW's :00 to spread load)
 
 jobs:
   update:
