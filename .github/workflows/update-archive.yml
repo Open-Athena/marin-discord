@@ -42,7 +42,11 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          # Clear AWS STS vars set by the earlier OIDC role-assume step; R2
+          # rejects session tokens with \`X-Amz-Security-Token\` InvalidArgument.
+          AWS_SESSION_TOKEN: ""
           AWS_DEFAULT_REGION: auto
+          AWS_REGION: auto
           R2_ENDPOINT: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
         run: aws s3 cp archive.db s3://marin-discord/archive.db --endpoint-url "$R2_ENDPOINT"
 
