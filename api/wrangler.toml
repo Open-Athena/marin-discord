@@ -13,7 +13,7 @@ port = 5273
 [vars]
 CORS_ORIGIN = "*"
 GUILD_ID = "1354881461060243556"
-ARCHIVE_DB_URL = "https://pub-5b49496c4901401b9debf2fcb8cf0ce0.r2.dev/archive.db"
+ARCHIVE_DB_URL = "https://marin-discord.pages.dev/archive.db"
 
 # Cron: run the scheduled() handler every 10 minutes to incrementally
 # update D1 from Discord. DISCORD_TOKEN must be set via
