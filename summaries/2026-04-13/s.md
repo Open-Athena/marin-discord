@@ -1,0 +1,10 @@
+- **Iris Infrastructure Stability** — Iris controller required ~10 restarts for checkpoint slowdowns, preemption bugs, region scheduling, and log ingestion issues; prod dashboard now at iris.oa.dev
+- **Code Review & Scheduling Fixes** — willheld fixed a Claude-introduced region constraint bug (PR #4720); post-training evals migrated to Iris with OlympiadBench Physics added (PR #4894)
+- **Data Mixing** — yurusankyo's GRP method hits 1.036 BPB vs Olmix 1.069 and proportional 1.092; cross-scale correlation studies underway at 130M–1.2B
+- **Levanter & LoRA/DPO Debugging** — Ahmed traced a v5p-8 LoRA+DPO divergence to FSDP sharding; XLA device-order permutation produces extra all-reduces; vLLM prompt_logprobs PR drafted via Codex
+- **Code Architecture & Tooling** — dlwh flagged executor/Iris multi-region concerns; rohithck filed actor-init and fray test-coverage issues; R2 migration prioritized for external contributors
+- **News & Research** — Larry's quantile-balancing blog published; papers shared on twin-head training, tokenizer efficiency, and experience replay for RLVR
+- **Community Growth** — ~30 new welcome-room joins; 7 introductions from engineers spanning search infra, RL, fintech, and aerospace
+- **MoE Training** — 130B/A29B run at ~5% complete looking good; dlwh reconstituted 1e23 run on 2× hardware with 20% better MFU
+- **Downstream Scaling & Proxy Evals** — rohithck created channel and stem issue (#4550) to track proxy eval project
+- **Automated Research & Claude Regression** — Team reports Claude quality regression hurting monitor/agent loops; sleep-loop workaround killed by Anthropic

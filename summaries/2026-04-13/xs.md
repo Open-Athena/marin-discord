@@ -1,0 +1,1 @@
+272 msgs, 15 contributors: Iris controller hit repeated stability issues (checkpoint slowdowns, preemption glitches, region scheduling bugs) requiring ~10 restarts; data-mixing GRP method reaches 1.036 BPB vs 1.069 Olmix; 130B MoE run underway at ~5%; LoRA+DPO debugging uncovers bizarre XLA device-order sensitivity.
