@@ -1,0 +1,1 @@
+207 msgs, 15 contributors: Iris scheduler crash fixed (reservation bug), BOS tokenization regression found & scoped, MoE recipe hits 52% speedup at 3e19, 4888 v5p TPUs online enabling v5p-512 midtraining runs. DeepSeek V4 paper dropped.

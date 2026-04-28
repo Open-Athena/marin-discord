@@ -1,0 +1,10 @@
+- **Infra & Iris Scheduler** — Scheduler crash from reservation bug fixed ([PR #5032](https://github.com/marin-community/marin/pull/5032)); BOS tokenization regression found and scoped to validation sets; 4888 v5p TPUs online; GCP reauth pain traced to OpenAthena org settings
+- **MoE Training** — 52% recipe speedup at 3e19 scale from partial key offset + LR updates; MuonH vs AdamH showing no clear winner yet; grad clipping mostly not triggering but being monitored for longer runs
+- **Code Review & Tooling** — Backward activation logging with DAG visualization added; MCP integration for Codex babysitting explored; math SFT datasets (FineProofs, NuminaMath) submitted; golden tests for Iris DB equivalence
+- **News & Papers** — DeepSeek V4 paper shared (5 reactions); AI2 BAR blog post on batch-size scaling; MathNet 30k multilingual math dataset; PPL gap sets paper
+- **Downstream Scaling** — Planning scaling ladder experiments across mid/post-training mixes to predict large model behavior from smaller proxies
+- **Levanter & LoRA** — Ahmed fixed XLA device-order LoRA bug by swapping A/B matrix multiplication order for sharded embed_dim modules
+- **Midtraining** — Ahmed running v5p-512 pod for first time, tuning LR on nemotron math with 3.5hr turnaround per run
+- **Data Mixing** — willheld shared eval patches branch and PR for data-mixing reference model evaluation
+- **RL & Weight Transfer** — Confirmed jax weight transfer code is unused; arrow flight is current approach
+- **Community** — 31 new members joined; notable intros from Falcon LLM contributor Iheb, LFAI multimodal speedrun effort, and several PhD researchers
