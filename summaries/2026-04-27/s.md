@@ -1,0 +1,8 @@
+- **Perplexity Gap & Evals** — dlwh published detailed perplexity-gap analysis showing Marin weaknesses in code, patches, multilingual, and tables; team debated BPB as a proxy metric and GSM8K grader false negatives
+- **Iris Infra** — Russell Power did multiple controller restarts (log migration, bug fixes); multi-host preemption limitation identified; team agreed on single tmp bucket and plans for a PyPI mirror
+- **Data Mixing** — yurusankyo validated small-scale-optimized mixtures hold at larger scales; willheld applied IRT decomposition to optimize aggregate task performance with promising early results
+- **vLLM TPU Inference** — Discovered that pinned vllm_tpu package ignores seed/temperature on TPU; team plans to move to Marin forks and bump JAX to 0.9.2
+- **Code Review** — Heavy PR week with executor-in-training-job design, stats service, endpoint proxy, PyPI mirror design, Ruff import sorting, and vLLM docker sidecar removal
+- **MoE Optimizers** — Gradient normalization ablations show 4% hurt at scale; Larry's embed-to-AdamH trick yields 5% speedup; Muon roughly neutral with AdamH so far, needs more tuning
+- **Executor & Artifacts** — MirrorFS region-change footgun caused checkpoint hash mismatch; team brainstormed named artifact system with region-aware resolution
+- **News & Research** — Hyperball doing well on nanogpt speedrun; OLMPool paper shared; talkie-coder gets 4.5% SWE-bench; flash-attention-residuals Triton kernels released

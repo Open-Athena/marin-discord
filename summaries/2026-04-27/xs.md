@@ -1,0 +1,1 @@
+358 msgs, 15 contributors: Marin perplexity gap analysis reveals code/multilingual weaknesses; MoE optimizer ablations (Muon vs AdamH) underway; data-mixing joint scale+mixture modeling validated; vLLM TPU sampling bug found & fix plan set; Iris controller saw multiple restarts.
