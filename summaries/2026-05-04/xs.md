@@ -1,0 +1,1 @@
+195 msgs, 15 contributors: MuonH optimizer achieves 20-30% speedup on MoE; Iris scheduler race condition fixed; vLLM logprob divergence flagged; data mixing IRT optimization validated at scale; 1e23 MoE run 58% complete.

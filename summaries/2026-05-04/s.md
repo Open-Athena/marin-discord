@@ -1,0 +1,10 @@
+- **Inference Logprob Divergence** — rohithck flagged vLLM logprobs diverging ~0.5 nats from HF/Levanter; likely loose attention tolerances in vLLM's kernel
+- **Iris Scheduler Fixes** — Russell Power fixed race condition causing 700-1000 preemptions on queued jobs, restarted controller with stats offloading and perf tweaks
+- **MoE Optimizers & Scaling** — Kaiyue-Wen got MuonH working with 20-30% step-wise speedup over AdamH; 1e23 MoE run 58% complete; Larry found Muon underperforms on OOD/code evals
+- **Data Mixing Optimization** — willheld validated IRT factor-optimized mix vs proportional across 4 MoE scales; MMLU shows positive scaling for optimized mix
+- **Tokenizer Planning** — dlwh outlined whitespace and multilingual coverage gaps; dokhyon scoping evaluation of tokenizers on newer eval sets
+- **Code Review & Design Docs** — Design docs for iris_profile_to_finelog and unified_unit_workflow posted; accelerator stack validation PR filed
+- **Deduplication Progress** — rav completed first full fuzzy dedup of Nemotron v1 (~18% fuzzy dups); planning decontamination resurrection with Ahmed
+- **Evals & Midtraining** — dlwh regenerating synth validation sets; Ahmed running midtraining on Delphi with Nemotron CC-math; Benjamin flagged weak post-training evals
+- **Data Curation** — willheld reports Code World Model stack traces projected at ~206B tokens, complementing SWE-Zero
+- **Community & News** — 31 new members joined; 9 introductions from researchers at Mila, Meta, UCSD and others; papers shared on MoE and optimization
