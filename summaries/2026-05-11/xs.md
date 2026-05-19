@@ -1,0 +1,1 @@
+248 msgs, 15 contributors: Iris controller instability dominated the week with multiple restarts; Delphi blog published; MuonH optimizer tuning continues for MoE with warmup removal improving predictions; OT4 dataset strategy debated; perplexity gap analysis reveals tokenizer weaknesses; 24 new members joined.

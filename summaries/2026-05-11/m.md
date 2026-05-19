@@ -1,0 +1,68 @@
+## <#1364827114670657616> — Iris Controller Instability & Cluster Operations
+
+The Iris controller had a rough week with multiple incidents. Larry reported [jobs failing to reschedule after preemption](https://discord.com/channels/1354881461060243556/1364827114670657616/1503433820483879115), quickly fixed by Russell Power via [PR #5629](https://github.com/marin-community/marin/pull/5629). Ahmed hit the [infinite preemption loop](https://discord.com/channels/1354881461060243556/1364827114670657616/1503516938423369883) again (issue [#5572](https://github.com/marin-community/marin/issues/5572)). Mid-week, the controller became sluggish — rav [restarted it](https://discord.com/channels/1354881461060243556/1364827114670657616/1504679161979994153) and filed [issue #5751](https://github.com/marin-community/marin/issues/5751) after profiling. The scheduler thread [died overnight](https://discord.com/channels/1354881461060243556/1364827114670657616/1504770871561158847) and required another restart. Russell attempted a [VM server upgrade](https://discord.com/channels/1354881461060243556/1364827114670657616/1504921798536597697) that didn't go smoothly, causing ~10 min downtime and job restarts.
+
+Eric Czech raised concerns about [cross-user job preemption at same priority](https://discord.com/channels/1354881461060243556/1364827114670657616/1504089429621477446). Moo Jin Kim asked about the [75K Iris credit system](https://discord.com/channels/1354881461060243556/1364827114670657616/1504181902305661008) — Ahmed explained batch jobs can accidentally consume interactive quota, and Russell acknowledged this may be a [bug worth fixing](https://discord.com/channels/1354881461060243556/1364827114670657616/1504185189163601960). Ryan Williams was identified as the source of [ad-hoc SQL queries hitting the controller](https://discord.com/channels/1354881461060243556/1364827114670657616/1504619262092906597). v5p-8 utilization hovered at [58% with jobs queued](https://discord.com/channels/1354881461060243556/1364827114670657616/1503768194941452368), likely capacity-constrained.
+
+## <#1366632114316906506> — Zephyr Resharding, TPU Inference, and Ops Tooling
+
+rohithck discovered that [Zephyr's reshard uses round-robin](https://discord.com/channels/1354881461060243556/1366632114316906506/1503230947334684803) rather than preserving record order. rav suggested [grouping input files](https://discord.com/channels/1354881461060243556/1366632114316906506/1503431100695838731) as an alternative to adding a knob. rohithck also found [vmem issues](https://discord.com/channels/1354881461060243556/1366632114316906506/1503803923876675635) with the updated TPU inference on larger Delphi models ([issue #5672](https://github.com/marin-community/marin/issues/5672)) and [duplicate nested directories](https://discord.com/channels/1354881461060243556/1366632114316906506/1503921144846221483) in some Delphi checkpoints (cleaned up with Will's approval).
+
+Ahmed discovered that [Michael's inference job design](https://discord.com/channels/1354881461060243556/1366632114316906506/1504196730621526116) was inadvertently affecting scheduling fairness — child processes inherit parent timestamps, getting FIFO priority over newer batch jobs. rohithck flagged the [cross-region egress report reading stale paths](https://discord.com/channels/1354881461060243556/1366632114316906506/1504192842170499226) ([issue #5703](https://github.com/marin-community/marin/issues/5703)) and proposed an [Iris triage guide](https://discord.com/channels/1354881461060243556/1366632114316906506/1504692546486407229) ([issue #5752](https://github.com/marin-community/marin/issues/5752)). dlwh asked about progress on [issue #5149](https://github.com/marin-community/marin/issues/5149).
+
+## <#1365058937589858324> — Code Review Activity
+
+Key PRs this week: rohithck's [storage report fix](https://github.com/marin-community/marin/pull/5688) (rsync picking up deleted paths), a [tokenizer loading utility](https://github.com/marin-community/marin/pull/5632) that turned out to overlap with Levanter's existing `load_tokenizer` (closed after discussion with dlwh), the [triage doc PR](https://github.com/marin-community/marin/pull/5757), and [automated egress reporting via GHA](https://github.com/marin-community/marin/pull/5758) with Discord webhook + gist publishing. marin-bot posted a [controller tick snapshot design](https://github.com/marin-community/marin/pull/5701) to replace redundant scheduler threads with a shared snapshot per tick. Russell Power submitted PRs [#5594](https://github.com/marin-community/marin/pull/5594), [#5595](https://github.com/marin-community/marin/pull/5595), and [#5592](https://github.com/marin-community/marin/pull/5592) for review.
+
+## <#1368297424086499359> — OT4 Dataset Strategy & Prompt Duplication
+
+JeniaJitsev kicked off [planning for OT4 next steps](https://discord.com/channels/1354881461060243556/1368297424086499359/1504633263984214036), noting ~5M samples across math (3.5M), code (0.8M), and science (0.345M) with max length 7,500. Moo Jin Kim shared that the team has been running [small-scale distillation tests](https://discord.com/channels/1354881461060243556/1368297424086499359/1504663748458053802) with various teacher models (Qwen3-4B/32B, Kimi K2.5) at 32K max length. Benjamin Feuer revealed [massive prompt duplication](https://discord.com/channels/1354881461060243556/1368297424086499359/1504818214025039992) in OT4 — code has 104.6x duplication with only 9,168 unique seeds — and shared the [deduplicated version](https://huggingface.co/datasets/laion/OpenThoughts-4-Unique-Combined). The team discussed whether to rebalance domain proportions and whether max sequence length (7.5K vs 32K) affects data usefulness. Benjamin also shared [Nemotron's massive data release](https://discord.com/channels/1354881461060243556/1368297424086499359/1505202592966512843) (reportedly 10T unique tokens).
+
+## <#1365044508546568372> — MoE Optimizer Tuning: MuonH vs AdamH
+
+Kaiyue-Wen reported Gate 2 results showing [~15% speedup at d1280 but a surprising predicted crossover between 1e21 and 1e23](https://discord.com/channels/1354881461060243556/1365044508546568372/1503429148603846667). After discovering that [warmup was slowing things down by 10%](https://discord.com/channels/1354881461060243556/1365044508546568372/1503515357749706872), removing it led to a [small but positive predicted win at 1e23](https://discord.com/channels/1354881461060243556/1365044508546568372/1504268569947410512) ([issue #5619](https://github.com/marin-community/marin/issues/5619)). Larry noted that [attention gated_norm params were incorrectly routing to AdamW instead of AdamH](https://discord.com/channels/1354881461060243556/1365044508546568372/1503478289191403611) and explored [column normalization after Newton-Schulz for K/V projections](https://discord.com/channels/1354881461060243556/1365044508546568372/1504985199203717230) to handle non-square GQA matrices. Larry shared the [April MoE experimental results summary](https://discord.com/channels/1354881461060243556/1365044508546568372/1504634238727753759). elie asked about [norm + scaling after top-k in MoE routing](https://discord.com/channels/1354881461060243556/1365044508546568372/1505618289290776636), noting DeepSeek/K2 practices.
+
+## <#1356487738840318002> — Perplexity Gaps & Tokenizer Analysis
+
+dlwh released an [updated perplexity gap visualizer](https://discord.com/channels/1354881461060243556/1356487738840318002/1504750674490036335) at <https://marin.community/analysis/perplexity-gap/> with many new datasets and heatmaps, revealing that Marin models are "very very bad at json" compared to Qwen. Bilibird provided a [detailed tokenizer comparison](https://discord.com/channels/1354881461060243556/1356487738840318002/1505571049066987642) showing the Marin tokenizer (Llama3-based) has weird multi-digit tokens, 5K more whitespace-prefixed tokens than Qwen3, far fewer Mandarin tokens, and grouped punctuation bloat. dlwh [acknowledged the analysis](https://discord.com/channels/1354881461060243556/1356487738840318002/1505720271804432405) and asked Bilibird to post findings on relevant GitHub issues ([#5079](https://github.com/marin-community/marin/issues/5079), [#4971](https://github.com/marin-community/marin/issues/4971)). Jeff H suggested [training on OEIS](https://discord.com/channels/1354881461060243556/1356487738840318002/1504760344378085387) for pattern recognition and filed [issue #5770](https://github.com/marin-community/marin/issues/5770), noting CC BY-SA license complications.
+
+## <#1354881461060243561> — Tokenizer Distribution Mismatch Discussion
+
+dlwh and Bilibird continued the tokenizer discussion, with dlwh explaining that [missing tokens in eval sets indicate distributional mismatch](https://discord.com/channels/1354881461060243556/1354881461060243561/1504922901453996132) between training data and the Llama3 tokenizer's training distribution. Bilibird found the [missing programming clusters span mobile dev, frontend/backend, DB, game, and UI domains](https://discord.com/channels/1354881461060243556/1354881461060243561/1505294885320786072), plus financial content. Furkan noted that [Google TRC is now oversubscribed](https://discord.com/channels/1354881461060243556/1354881461060243561/1503841946874019840) and can't extend existing allocations.
+
+## <#1441211384279994529> — Decontamination Strategy
+
+rav asked dlwh for the [canonical eval dataset list for decontamination](https://discord.com/channels/1354881461060243556/1441211384279994529/1503517600091734169). dlwh recommended running against everything in AA and lm-eval-harness. The team discussed [doc-level vs span-level decontamination](https://discord.com/channels/1354881461060243556/1441211384279994529/1503522072096280727), with Russell noting doc-level is simpler and they could be conservative by removing docs with N% contamination. Percy Liang [requested visibility into which training docs get removed](https://discord.com/channels/1354881461060243556/1441211384279994529/1503601652572094576). rav plans to remove the `TRAIN_TEST_OVERLAP` mode.
+
+## <#1462895580064911522> — Data Mixing Plans
+
+yurusankyo outlined [action items](https://discord.com/channels/1354881461060243556/1462895580064911522/1503504024916459630): run swarm at 300M on preemptible compute, run David's evals on existing swarm, and build a slider mix GUI. willheld shared [mixture scaling plots on MoE](https://discord.com/channels/1354881461060243556/1462895580064911522/1504243294299881573) and the LessWrong post ["A Benchmark is a Sensor"](https://www.lesswrong.com/posts/JzfcJMgfkhfRhwg4C/a-benchmark-is-a-sensor). dlwh shared a new paper via Eric Czech: [Scaling Laws for Mixture Pretraining](https://arxiv.org/abs/2605.12715).
+
+## <#1375005693899309126> — Scaling Suite Checkpoint Confusion
+
+Ahmed discovered he had [accidentally used the v5 rather than v6 3e20 Delphi checkpoint](https://discord.com/channels/1354881461060243556/1375005693899309126/1504287020292505701) for midtraining runs. willheld clarified that v5 and v6 were [different token scaling factor ablations](https://discord.com/channels/1354881461060243556/1375005693899309126/1504290092666064897) and pointed to the [compute-optimal points on HuggingFace](https://huggingface.co/collections/marin-community/delphi) and the [executor DAG pattern](https://github.com/marin-community/marin/blob/main/experiments/exp1337_delphi_suite.py#L86-L101) for programmatic access.
+
+## <#1385733711013871729> — Distributed Inference Design
+
+Michael Ryan [proposed a meeting](https://discord.com/channels/1354881461060243556/1385733711013871729/1504212410381111326) to discuss shared distributed inference service requirements. romain followed up with a [cleaned-up Zephyr multi-region inference design doc](https://discord.com/channels/1354881461060243556/1385733711013871729/1505367258690752593) based on their Thursday discussion.
+
+## <#1409936157822681110> — Style Tokens
+
+dlwh flagged an [Owain Evans thread](https://x.com/owainevans_uk/status/2055318932857459009) as having [important implications for style tokens](https://discord.com/channels/1354881461060243556/1409936157822681110/1504959434567323830).
+
+## <#1462884917292699669> — Research Automation Cautionary Tale
+
+Ahmed's [self-deprecating post](https://discord.com/channels/1354881461060243556/1462884917292699669/1504287685714645053) about vibe-coded agents selecting the wrong Delphi checkpoint served as a reminder about the risks of automated research pipelines.
+
+## Community
+
+24 new members joined via #welcome-room. Notable introductions: stochasm (Varun) from Arcee AI pretraining, Trishanu from Microsoft Research India, Gonza from Cenia/LatamGPT, Vladimir Salnikov from Danish Foundation Models, Charles Goddard from Arcee AI research, and jaisidhsingh from MPI Tübingen working on hybrid attention scaling laws. Multiple people discovered Marin at ICLR '26.
+
+## News & Research
+
+- willheld published the [Delphi blog post](https://openathena.ai/blog/delphi/) with all checkpoints on [HuggingFace](https://huggingface.co/collections/marin-community/delphi)
+- [Scaling Laws for Mixture Pretraining Under Distribution Shift](https://arxiv.org/abs/2605.12715) — shared by dlwh via Eric Czech
+- [A Benchmark is a Sensor](https://www.lesswrong.com/posts/JzfcJMgfkhfRhwg4C/a-benchmark-is-a-sensor) — shared by willheld
+- Nemotron pre-training/post-training/RL data release (~10T tokens) — shared by Benjamin Feuer
+- [Scaling Sparse MoE paper](https://arxiv.org/abs/2601.20205) — noted by Matheart
+- Sri shared <https://arxiv.org/abs/2605.06546>

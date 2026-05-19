@@ -1,0 +1,14 @@
+- **Iris Infrastructure Instability** — Multiple controller restarts, preemption loops, scheduler freezes, and a bumpy VM upgrade kept the infra team busy all week
+- **Zephyr & Code Quality** — Reshard ordering footgun discussed, TPU inference vmem issues on Delphi models, cross-region egress report fixed, and triage doc proposed
+- **Code Review** — PRs for storage report fix, tokenizer loading, Iris worker race condition, controller tick snapshot redesign, and egress automation
+- **Data Curation & OT4** — OT4 dataset strategy debated: heavy prompt duplication found (~104x in code), max sequence length experiments planned, Nemotron data release shared
+- **MoE Optimizer Tuning** — MuonH predicts small positive win at 1e23 after warmup removal; column normalization for K/V explored; April MoE results shared
+- **Evals & Perplexity Gaps** — Updated perplexity gap tool reveals Marin tokenizer weaknesses vs Qwen3 in digits, whitespace, and non-English tokens
+- **Tokenizer & Distribution Analysis** — Bilibird's deep dive shows Marin (Llama3) tokenizer has redundant whitespace tokens and lacks coding/multilingual coverage vs Qwen3
+- **Deduplication** — Doc-level decontamination approach discussed; plan to run against all AA and lm-eval-harness datasets
+- **Data Mixing** — Swarm runs at 300M planned; mixture scaling plots on MoE shared; new paper on mixture pretraining scaling laws noted
+- **Scaling Suite** — Ahmed discovered midtraining used wrong (v5 not v6) 3e20 checkpoint; Will clarified how to find compute-optimal Delphi points
+- **Distributed Inference** — Michael proposed meeting on shared inference service; romain shared cleaned-up Zephyr multi-region inference design doc
+- **Community & News** — Delphi blog published; 10 new introductions from Arcee AI, LAION, Microsoft Research, Cenia, and others; TRC oversubscribed
+- **Style Tokens** — dlwh flagged Owain Evans thread on style tokens as having important implications
+- **Research Automation** — Ahmed's cautionary tale: vibe-coded agent selected wrong Delphi checkpoint for midtraining runs
