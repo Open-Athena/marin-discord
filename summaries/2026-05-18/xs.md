@@ -1,0 +1,1 @@
+Marin's 1e23 MoE (130B params, 16B active) finished with Paloma loss within 1% of prediction from 333× smaller runs; 241 msgs across 17 channels, 15 contributors. Tokenizer exploration, Iris controller instability, and linear-vs-WSD schedule debates dominated the week.

@@ -1,0 +1,11 @@
+- **1e23 MoE Completion & LR Schedule Debate** — Marin's compute-optimal 130B MoE finished at 2.234 Paloma loss; heated discussion on linear decay vs WSD with hyperball interactions
+- **Evals & Metrics** — Tokenizer choice debated (Qwen vs TokenMonster vs BPE); choice_logprob selected for MCQA mixing; BPB perplexity gap comparator shipped
+- **Tokenizer Development** — TokenMonster vocab compression explored (~5% reduction); 32k/64k/128k tokenizer benchmarking underway at ~800k tok/s single CPU
+- **Iris Infrastructure** — Controller sluggishness traced to ConcurrencyLimitInterceptor bug; multiple restarts needed; LoRA revival PR saves storage costs
+- **Data Mixing & Curation** — Benjamin Feuer surfaced math/arXiv/legal datasets; IID validation set strategy discussed; domain/quality tagger intruder tests show new tagging ≥ Dolma
+- **Code Review & PRs** — Multi-host training fix for background tracker; per-user GCS namespace proposal; Zephyr heartbeat tolerance for distributed inference
+- **Downstream Scaling** — GSM8k loss extrapolation from <1e21 to 1e23 slightly underpredicts; tunable-difficulty benchmark approach shows promise
+- **MoE Ablation Cleanup** — dlwh organized MoE experiment verdicts: E=128, attention gating, shared experts all kept; MuonH/z-loss work still open
+- **Long-Context Pretraining** — dlwh proposed riffle-interleaving chunks from similar docs; Percy Liang suggested graph-based document traversal approaches
+- **Midtraining Experiments** — Ahmed M Ahmed ran Delphi scaling ladder midtraining at 20% token budget; marimo notebooks adopted for analysis
+- **Community & News** — Percy Liang posted comprehensive project update; 16+ new members joined; papers shared on scaling laws, data filtering, and ScheduleFree+
