@@ -1,0 +1,1 @@
+269 msgs, 15 contributors: data-mixing swarm analysis & interactive viewer dominated the week; dedup run processed 15B docs down to 12T tokens; GPU MoE routing perf issues surfaced on B200s; 90+ new members joined.

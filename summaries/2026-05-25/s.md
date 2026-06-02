@@ -1,0 +1,9 @@
+- **Data Mixing Swarm & Interactive Viewer** — willheld built a web UI for exploring data mix tradeoffs via DSP regression; pre-registered a mix targeting HumanEval/GSM8K/MMLU improvements
+- **Infrastructure & Scheduling** — Larry analyzed batch preemption issues; Russell Power rolled out reconcile-based scheduler; Al began onboarding to Iris/Zephyr
+- **Deduplication Results** — rav completed dedup run on 15B docs (15T tokens → ~12T); doc-level decontamination removed ~0.04% with likely false positives
+- **Data Curation & Formatting** — dlwh proposed varying HTML-to-text and prompt templates at pretraining to reduce format sensitivity
+- **GPU MoE Performance** — dlwh found MoE routing bottleneck on B200s at d5120; Grug trails Megatron significantly at larger scales
+- **Community Growth** — 90+ new members joined; notable intros from ex-Anthropic, ex-xAI, Poolside, and academics including a UCL professor on MoE scaling theory
+- **Evals & Model Issues** — Percy Liang suggested expanding eval coverage to 180+ benchmarks; Rabrg reported anomalous Delphi 25B checkpoint performance
+- **RL Stack & Agents** — Benjamin Feuer asked about RL stack ownership; Sankalp Jajee volunteered to continue OT-Agent work
+- **News & Research** — Poolside tech report validated similar LR transfer and swarm approaches; Ultra-FineWeb-L3 dataset and MoE scaling parameterization paper shared
