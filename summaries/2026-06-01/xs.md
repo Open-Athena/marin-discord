@@ -1,0 +1,1 @@
+196 msgs, 15 contributors: Levanter inference 10x speedup; TPU cluster stability fixes & vLLM decode corruption filed; data mixing insights from Microsoft AI tech report; "circuits" evals proposed to close Qwen gap; RL hero run reproduces on Perlmutter but not Jupiter; 26 new members joined.

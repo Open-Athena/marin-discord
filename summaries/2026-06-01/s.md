@@ -1,0 +1,15 @@
+- **Infra & Cluster** — TPU controller restarted multiple times to fix preemption thrashing; vLLM decode corruption on TPU filed as issue; sandbox/limited-trust user tier discussed
+- **Data Mixing** — willheld shared Dolma Swarm rank correlation matrix and built custom dashboard; deep discussion of Microsoft AI's data mixing approach and scale-dependent duplication
+- **Evals & Circuits** — dlwh proposed "circuits" evals to close vocab/arithmetic gap vs Qwen, with plans to generate synthetic drill data
+- **New Members** — 26 new arrivals including Benjamin Feuer (post-training lead), researchers from Mila, Tübingen, CMU, and industry
+- **General & Architecture** — Larry's MoE blog post shared; no plans for linear attention/SSM; discussion of attention query magnitude scaling
+- **Code & Executor** — Russell Power discussed cross-region TPU executor limitations and workarounds for multi-model eval sweeps
+- **Reinforcement Learning** — Benjamin Feuer set up MarinSkyRL repo, running 95-dataset agentic RL sweep; 8B hero run reproduces on Perlmutter but not Jupiter due to hardware-dependent training instability
+- **Data Curation** — Agentic datagen via OT-Agent on Iris TPUs tracked; quality filter gradient validated for code; 12 agentic trace datasets published to HF
+- **Long Context** — Benjamin Feuer released 131k-context agentic trace datasets from MiniMax; willheld prefixes success/failure conditions instead of filtering
+- **Inference** — dlwh's "goal mode" made Levanter inference ~10x faster, within 12% of vLLM TPU; romain building agentic rebase/smoke-test workflow for upstream forks
+- **Code Review** — Multiple PRs reviewed including grug MoE updates, automated storage reports, and compilation caching fixes
+- **Tokenizer** — Pranshu training Llama/GPT-OSS/Tokenmonster at 262k vocab; Llama3 regex groups 1-3 digits differently than Qwen3
+- **MoE & Scaling** — Kaiyue-Wen raised whether multi-phase data mixtures require rethinking scaling ladder for arch/optimizers
+- **DNA** — Gonzalo launched DNA research observatory with benchmark leaderboards and nucleotide dependency interpretation
+- **News & Research** — Microsoft AI tech report, Tony & Percy Liang's paper using Marin infra, and several arxiv papers shared
