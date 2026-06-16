@@ -1,0 +1,1 @@
+150 msgs, 15 contributors: Delphi scaling ladder Q&A dominated the week; tokenizer training settled on 50B tokens; Shampoo vs Muon optimizer drama; RL hero run still elusive after 10+ ablations; 25+ new members joined.

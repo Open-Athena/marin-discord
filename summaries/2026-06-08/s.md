@@ -1,0 +1,11 @@
+- **Scaling Laws & Delphi** — Ahmed M Ahmed got detailed guidance from willheld on fitting scaling ladders, beta tuning, LR decay, and reference hyperparameter sweeps
+- **Tokenizer Training** — Team dropped TokenMonster, settled on 50B-token training corpus; Pranshu training 4 tokenizers with numeric-specific strategies (r2l, place alignment)
+- **Optimizers: Shampoo vs Muon** — Kaiyue-Wen explained the key difference (EMA/outer-product ordering); dlwh quipped "there is a little bit of schmidhuber in all of us"
+- **New Members** — 25+ joined including Alex Dimakis (UC Berkeley), malteos (Common Crawl), Atula Tejaswi (UT Austin), and Brian Lui (Stanford/Waymo)
+- **Evals & Metrics** — Benjamin Feuer starting `marin-community/evalchemy` fork; dlwh shared Marin target metrics; twitterAAE_HELM anomaly confirmed as not worth worrying about
+- **News & Research** — Shared RL scaling laws paper, Anthropic Fable 5 system card, Eleuther's training dynamics manifesto, and Recursive's automated AI research post
+- **Perplexity Gaps** — dlwh added deterministic "circuit" algorithms revealing Qwen's advantages in base conversion/arithmetic; built dashboard with Codex
+- **Reinforcement Learning** — Benjamin Feuer got MarinSkyRL running on Qwen3-Next-80B-A3B (96 GPUs); 10+ ablations still can't reproduce 8B hero run
+- **General & Community** — murphy proposed a Marin VLM model for robotics; dlwh updated the repo README; Larry raised RoPE base >10k question for long-context
+- **MoE Architecture** — Larry proposed partial key offset for June 67B-A2B run; summarized notable techniques from Microsoft AI report
+- **Code & Infra** — romain rebased tpu-inference and vllm forks; rohithck filed executor path bug; Russell Power posted PRs for review
