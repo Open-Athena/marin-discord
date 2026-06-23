@@ -1,0 +1,18 @@
+- **Muon Newton-Schulz Coefficients** — Ahmed traced 'quintic' coefficients to a nano-GPT submission; Larry launched Polar Express ablation runs but Kaiyue-Wen says gains are noise-level
+- **Iris Infra Incidents** — willheld's eval flood OOM'd the controller; Russell fixed preemption-failure bugs, duplicate worker IPs, and updated deps
+- **Community Growth** — 33 new members joined via welcome-room; notable intros from OpenEuroLLM, YC biocompute startup, and xAI alignment folks
+- **Perplexity Gaps in JSON** — Bilibird and dlwh discussed Marin's weak JSON delimiter understanding; ICL vs memorization likely explains synthetic vs Stack v2 gaps
+- **Muon + FSDP Scaling Wall on GPU** — dlwh posted detailed analysis showing Muon's NS comms don't scale with FSDP; pipeline parallelism or cross-node EP likely needed
+- **New Members** — 12 introductions including researchers from MIT CSAIL, ELLIS Tübingen, TU Darmstadt, and Avito
+- **Code & Config Reviews** — CPU-core pinning for accelerator jobs debated; Codex compaction errors on 5.4-mini; ruff no-local-import check enabled
+- **MoE Architecture & Training** — MuonH maintained advantage over AdamH even at 5000× overtrain; Larry testing alternating dense/MoE with 20% throughput gain on TPU
+- **MarinFold Protein Folding** — Tim O'Donnell launched #marinfold channel; Al wrote zephyr pipeline performance skill with fail-loud principles
+- **General & Announcements** — dlwh announced #marinfold and #dna channels; uwu1 pitched memory/engram scaling experiments
+- **Tokenizer Training** — Pranshu detailed the 1.1T corpus composition; rav clarified data is normalized but not fully deduped; heldout set discussion ongoing
+- **Code Review PRs** — tdv requested reviews on 8 data PRs; Russell proposed removing reservations entirely and top-level iris launcher; mcwitt added dev_gpu support
+- **Scaling Laws** — Ahmed clarified reference HP sweep uses 1B tokens not 2.5B; willheld explained 'reference' means example file not reference model
+- **News & Research** — GLM 5.2 released with MLA+IndexShare; OpenAI/Google trust layer announcement; willheld shared an RL paper
+- **Midtraining Pipeline** — Benjamin Feuer wrote up end-to-end pretraining→post-training results; surprisingly got non-zero AIME scores with nemotron cc math
+- **Long Context** — willheld shared new data pool context-length distribution; Larry plans staged context extension 4k→32k then 32k→262k on 67B model
+- **Reinforcement Learning** — marianna13 reported sequence-mean reduction defeats RL collapse but plateaus quickly on transfer
+- **Data Curation** — willheld shared a "Data Mixing Rorschach test"; Benjamin welcomed new contributor

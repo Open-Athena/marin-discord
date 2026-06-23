@@ -1,0 +1,1 @@
+215 msgs, 15 contributors: Muon Newton-Schulz coefficient deep-dive & Polar Express ablations; Iris controller OOM from eval flood; dlwh flags Muon+FSDP scaling wall on GPU, team pivots toward pipeline parallelism; GLM 5.2 drops with MLA+MTP; MarinFold protein folding channel launched.
