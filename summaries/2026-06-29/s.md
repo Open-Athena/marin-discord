@@ -1,0 +1,12 @@
+- **Midtraining** — 1e23 run launched at 57% MFU; Ahmed discovered 28% Math500 contamination in Nemotron CC Math and built decontamination tooling
+- **Executor Refactor** — Russell landed named-version artifact system replacing content-addressed hashes; old executor preserved in thalas repo
+- **Infrastructure** — Discussed 1-process-per-GPU for JAX on GPUs; transformers bumped to v5.12.1; Iris 2-week branch limit workaround for hero runs
+- **Data Mixing** — willheld published speedup table across 111 evals for new datamix; Russell & rav explored always-on DuckDB query service for data exploration
+- **MoE Training** — Larry kicked off 67B-A2B MoE on 10T tokens showing strong early Paloma loss; latent MoE investigation opened
+- **MarinFold** — Contact prediction breakthrough with >0.4 R-precision after ~23B tokens; July meeting schedule posted
+- **Scaling Laws** — Discussion of new arxiv paper on reshaping distributions, compared to prior Quanta work
+- **Data Curation** — Explored graph-based curation approaches from recent papers; issue filed for reconstructing link graphs
+- **Data E2E Transform** — Michael Ryan evaluating Pulpie for joint extraction+curation; distilling into faster pipeline
+- **Community & News** — Percy announced biweekly Marin community Zoom meetings; dlwh published open-development manifesto; OpenThoughts-Next kickoff announced
+- **GPU & Optimizers** — dlwh flagged all-gather bottleneck dwarfing compute costs on GPU MoE; Larry advised on LR search for Hyperball optimizer
+- **RL & Evals** — Benjamin closed out reasoning RL and exploration-inducing RL ablations on Delphi; working on agentic eval parity on TPU

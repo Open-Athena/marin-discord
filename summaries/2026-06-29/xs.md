@@ -1,0 +1,1 @@
+220 msgs, 15 contributors. 1e23 midtraining launched at 57% MFU on v5p-64; 67B-A2B MoE kicked off on 10T tokens with new datamix showing impressive Paloma loss; serious Math500 contamination found in Nemotron CC; executor refactored to named versions; Marin community meeting announced.
