@@ -1,0 +1,12 @@
+- **Infra & Cluster Ops** — Hero run crashes from port conflicts and preemptions on v4-2048; memory leak fix, finelog display fix, and pr_reviews.db bundle bloat addressed
+- **Tokenizer Selection** — willheld argues for adopting GPT-OSS tokenizer to simplify OPD and pass@K forecasting; rohithck notes 98%+ token overlap between Llama/Qwen
+- **MarinFold** — Post-training via rejection fine-tuning explored with best-of-N rollouts; new contacts-and-coordinates-v1 format for 3D coordinate prediction started
+- **Scaling Laws & Compute Optimality** — willheld proposes redefining "compute optimal" around pass@256 for RL; Ahmed asks Delphi design questions; nick11roberts (T² author) joins
+- **MoE Hero Run** — 67B-A2B MoE completed first cooldown at 2T tokens with phase2 datamix and 8k→65k seqlen; code evals improved
+- **Code & Eval Fixes** — GSM8K lm-eval grading fixed after datasets update; v4-8 inference issue filed and resolved; new priority evals list published
+- **GPU Kernels & MFU** — dlwh building fused EP kernel inspired by SonicMoE; Codex making progress on jaxpp for Hopper; Levanter ~2x worse MFU than Llama-Factory on A100s
+- **Community & Onboarding** — First Marin community meeting held with Percy Liang's slides; 30 new members joined; several new contributors introduced themselves
+- **Data Mixing & Curation** — Quality classifier and decontamination reports shared; targeted data filtering paper surfaced; OT-Next data breakout team forming
+- **RL & Midtraining** — MarinSkyRL 131k RL on MoEs plumbed on CoreWeave; Delphi MoEs midtrained on decontaminated math
+- **DNA & Bio** — Marin-DNA model outperforms Evo 2 on Mendelian variants; finetuning matches linear probing performance
+- **News & Research** — SonicMoE kernel for EP, Test-Time Curricula (SIFT) for targeted RL, SimCT for cross-tokenizer OPD, vLLM native RL APIs discussed

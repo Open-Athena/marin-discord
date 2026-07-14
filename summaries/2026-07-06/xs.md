@@ -1,0 +1,1 @@
+183 msgs, 15 contributors. First Marin community meeting held; 67B-A2B MoE hit first cooldown at 2T tokens; tokenizer alignment with GPT-OSS debated; scaling laws rethought for RL world; Levanter ~2x slower MFU than Llama-Factory on A100s.
