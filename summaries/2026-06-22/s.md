@@ -1,0 +1,16 @@
+- **Infra & Executor Refactor** — Team converged on replacing executor with lazy `name@version` artifacts; Russell explored Tunix RL on TPUs and fixed CoreWeave NHC priority issues
+- **Code Review & Experiment Cleanup** — Major experiment cull PR with discussion on keeping ~10 template experiments; design docs for multi-backend Iris and lazy artifacts posted
+- **Scaling Laws** — Ahmed M Ahmed ran 120 Vizier HP sweeps improving R² from 0.75→0.978; discussion on beta sensitivity and step counts with willheld
+- **Reinforcement Learning** — marianna13 hit 35% on SWE-bench with 8B fixthink; TheDeviousPanda onboarded; ixh shared RL infra strategy (SkyRL fork as primary path)
+- **GPU Performance** — dlwh profiled MoE on GPU at ~19.9% MFU; Muon dropped for now; Russell explored pipeline parallelism without beating FSDP
+- **Data Mixing** — willheld shared optimized-vs-proportional mixing scaling curves showing crossovers on key evals; Percy Liang noted crossovers are exciting
+- **Tokenizer** — Pranshu Chaturvedi shared numeric pre-tokenization experiments showing OSS tokenizer benefits from place-digit logic but Llama does not
+- **Automating Research** — yurusankyo discussed multi-agent orchestration and shared Fieldbook, a sqlite ledger for tracking agent-driven experiments
+- **Baby Marin Demo** — Benjamin Feuer stood up the first public Delphi model endpoint for vibe testing; community found EOS issues but promising signs
+- **MarinFold** — Tim O'Donnell showed MarinFold folds distant-from-training proteins where KNN fails, suggesting learned generalization beyond memorization
+- **Data Curation** — willheld built a quality viewer for rav's data filter; web graph centrality paper shared for potential crawl budget improvements
+- **MoE** — Discussion of seq-QB (within-sequence balance) for long context and kernel friendliness; Larry noted QB v2 flexibility
+- **Optimizers** — Ahmed M Ahmed and Larry discussed HP transfer for Muon/AdamH; beta2 not very sensitive, floored at 0.95
+- **DSPy & RL Bootstrapping** — willheld used GEPA prompt optimization to bootstrap RL signal on Delphi where standard prompts failed
+- **Experiments** — Russell tested adaptive sparsity curriculum (0.1%→higher k) for MoE; did not recover full-density performance
+- **News & Community** — OpenThoughts-Agent paper on arXiv (9 reactions); new members from MIT, NYU, Microsoft, TU Munich joined

@@ -1,0 +1,1 @@
+233 msgs, 15 contributors. Major executor refactor debated (replace with lazy artifacts), first baby Marin model demoed publicly, GPU MFU at ~19.9% on 4 nodes with Muon dropped, OpenThoughts-Agent paper hit arXiv, MarinFold shows learned folding beyond memorization.
