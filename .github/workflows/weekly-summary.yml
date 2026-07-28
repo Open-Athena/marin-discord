@@ -158,7 +158,7 @@ jobs:
       - name: Post to Discord/Slack
         if: ${{ inputs.post == true || github.event_name == 'schedule' }}
         run: |
-          uv run --with 'click' --with 'thrds>=0.2.0' python - <<'EOF'
+          uv run --with 'click' --with 'thrds @ git+https://github.com/runsascoded/thrds@d45d3401ad4c014a55550c91b832d8a83061524a' python - <<'EOF'
           import os, json, re, sys
           sys.path.insert(0, '.discord-agent')
           from summarize import (
