@@ -1,0 +1,1 @@
+205 messages, 15 contributors. Data mixing intensifies with embedding-based surrogates targeting Aug 15 datamix; MarinFold scales to 71B tokens (67M proteins); 67B-A2B MoE evals land mid-pack vs comparable models at 3x less FLOPS; Stack v3 integrated.

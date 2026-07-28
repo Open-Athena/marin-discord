@@ -1,0 +1,15 @@
+- **Data Mixing & Surrogate Modeling** — rav, yurusankyo, and Percy Liang debated KRR vs parametric surrogates for predicting optimal data mixes, targeting a new datamix by Aug 15
+- **MarinFold Progress** — Post-training rollouts were a negative result, but ESM Atlas distillation data expanded the corpus to 71B tokens (67M proteins) and new document formats (contacts-and-crops, pause tokens) are in flight
+- **Infrastructure & GPU Containers** — dlwh proposed switching to NVIDIA JAX-Toolbox Docker images to fix cubin issues; v4-2048 TPU reliability and Iris proxy overload were addressed
+- **Data Curation & Stack v3** — Stack v3 dropped and willheld quickly began integration, planning to replace CommonPile/Dolma 3.5 code derived from v2
+- **Midtraining & Delphi** — Benjamin Feuer showed DenseMixer A/B was inert, unblocking SFT unification on Levanter; Delphi 1e23 scaling ladder results shared
+- **Evals** — 67B-A2B non-agentic evals look promising at 2T tokens; GPQAD flagged as untrustworthy; new eval wishlist and grading perf issue opened
+- **Architecture Experiments** — Identity HC attention residual explored; Hybrid NewtonSchultz optimizer proposed; agent.md experiment procedure documented
+- **GPU Performance** — 360B-A23B MoE hit 25 MFU with PGLE flag; multi-rack scaling remains a concern
+- **Community & General Updates** — Second Marin community meeting held with willheld presenting data strategy; 67B-A2B at 2T tokens ready for post-training
+- **Safety & Red Teaming** — Systematic red teaming of Marin models discussed; volunteers signed up to help
+- **Code & Tooling** — Checkpoint naming OBO fix surfaced; Agent MoE playbook PR created; logprob scoring codepath questioned
+- **Tokenizer** — Lexicon coverage investigation underway comparing vocab sizes across languages and domains
+- **MoE Scaling** — 707B parameter option entered consideration; question raised about differentiable MoE approaches
+- **RL Data Curation** — Benjamin Feuer called for help building verifiers for 43 Harbor-format datasets missing from TaskTrove
+- **News & Research** — Stack v3 released on HuggingFace; new arxiv paper shared
