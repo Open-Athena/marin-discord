@@ -26,15 +26,25 @@ on:
         description: Branch to push to. "auto" - debug/<week>-<run_id>. Empty - main.
         type: string
         required: false
+      chain:
+        description: After this run, dispatch a backfill for the next missing week (if any)
+        type: boolean
+        default: false
   schedule:
     - cron: '0 9 * * 2'  # Tuesdays at 9am UTC
+
+concurrency:
+  group: weekly-summary
+  cancel-in-progress: false
 
 jobs:
   summarize:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       id-token: write
+      actions: write  # backfill chain dispatches this same workflow
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,16 +66,20 @@ jobs:
           if [ -n "${{ inputs.week }}" ]; then
             echo "week=${{ inputs.week }}" >> $GITHUB_OUTPUT
           else
-            # Last completed week (Monday of the week that ended most recently)
-            # If today is Tuesday, we want the Monday 8 days ago (covering Mon-Sun)
-            WEEK=$(python3 -c "
-          from datetime import datetime, timedelta
-          today = datetime.utcnow()
-          days_since_mon = today.weekday()
-          last_sunday = today - timedelta(days=days_since_mon + 1)
-          last_monday = last_sunday - timedelta(days=6)
-          print(last_monday.strftime('%Y-%m-%d'))
+            # Scheduled runs pick the OLDEST missing week in the lookback
+            # window (a failed prior run leaves a gap; heal it before moving
+            # on), falling back to the last completed week when nothing is
+            # missing. `missing-week` treats a week as done only when its
+            # files exist AND its meta records a posted thread.
+            WEEK=$(.discord-agent/cli.py missing-week)
+            if [ -z "$WEEK" ]; then
+              WEEK=$(python3 -c "
+          from datetime import datetime, timedelta, timezone
+          today = datetime.now(timezone.utc)
+          last_sunday = today - timedelta(days=today.weekday() + 1)
+          print((last_sunday - timedelta(days=6)).strftime('%Y-%m-%d'))
           ")
+            fi
             echo "week=$WEEK" >> $GITHUB_OUTPUT
           fi
 
@@ -153,6 +167,36 @@ jobs:
             echo "Summary already present for $WEEK, skipping regeneration"
           else
             .discord-agent/summarize.py -w "$WEEK" -o "summaries/$WEEK"
+          fi
+
+      # Commit generated files BEFORE posting: a posting failure must not
+      # discard the generation (the 2026-06-30 and 2026-07-21 failures left
+      # permanent gaps because generate → post → commit lost everything).
+      - name: Commit generated summary
+        run: |
+          WEEK=${{ steps.week.outputs.week }}
+          BRANCH="${{ inputs.commit_branch }}"
+          if [ "$BRANCH" = "auto" ]; then
+            BRANCH="debug/$WEEK-${{ github.run_id }}"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add summaries/
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          if [ -n "$BRANCH" ]; then
+            git checkout -b "$BRANCH"
+            git commit -m "Weekly summary: $WEEK"
+            git push -u origin "$BRANCH"
+            echo "Pushed to branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
+          else
+            git commit -m "Weekly summary: $WEEK"
+            # Hourly archive commits may land during generation — absorb
+            # rather than failing non-fast-forward.
+            git pull --rebase
+            git push
           fi
 
       - name: Post to Discord/Slack
@@ -310,7 +354,10 @@ jobs:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
           SLACK_POST_CHANNEL: ${{ steps.channels.outputs.slack }}
 
-      - name: Commit summary
+      # The post step rewrites meta.json with the posted thread/message ids;
+      # commit that separately so re-runs edit threads in place.
+      - name: Commit post metadata
+        if: ${{ inputs.post == true || github.event_name == 'schedule' }}
         run: |
           WEEK=${{ steps.week.outputs.week }}
           BRANCH="${{ inputs.commit_branch }}"
@@ -321,16 +368,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add summaries/
           if git diff --cached --quiet; then
-            echo "No changes"
+            echo "No metadata changes"
             exit 0
           fi
           if [ -n "$BRANCH" ]; then
-            git checkout -b "$BRANCH"
-            git commit -m "Weekly summary (debug): $WEEK"
+            # -B: no-op if the pre-post commit already created the branch
+            git checkout -B "$BRANCH"
+            git commit -m "Weekly summary: $WEEK (post metadata)"
             git push -u origin "$BRANCH"
-            echo "Pushed to branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
           else
-            git commit -m "Weekly summary: $WEEK"
+            git commit -m "Weekly summary: $WEEK (post metadata)"
+            git pull --rebase
             git push
           fi
 
@@ -360,3 +408,25 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## S" >> $GITHUB_STEP_SUMMARY
           cat summaries/$WEEK/s.md >> $GITHUB_STEP_SUMMARY
+
+      # Self-heal: after a successful scheduled (or chained) run, dispatch a
+      # backfill for the next missing week, if any. Terminates because each
+      # run commits its week before chaining; the != guard prevents a loop if
+      # a week somehow stays unposted (e.g. posting skipped).
+      - name: Dispatch backfill for next missing week
+        if: ${{ github.event_name == 'schedule' || inputs.chain == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NEXT=$(.discord-agent/cli.py missing-week)
+          if [ -z "$NEXT" ]; then
+            echo "No missing weeks in lookback window"
+          elif [ "$NEXT" = "${{ steps.week.outputs.week }}" ]; then
+            echo "No progress on $NEXT this run; not chaining"
+          else
+            echo "Dispatching backfill for $NEXT"
+            gh workflow run weekly-summary.yml \
+              -f week="$NEXT" -f post=true -f chain=true \
+              -f discord_channel="${{ vars.DISCORD_POST_CHANNEL }}" \
+              -f slack_channel="${{ vars.SLACK_POST_CHANNEL }}"
+          fi

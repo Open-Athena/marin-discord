@@ -9,9 +9,16 @@ on:
   schedule:
     - cron: '15 * * * *'  # Hourly at :15 (offset from CFW's :00 to spread load)
 
+# Serialize runs: a delayed/slow run must not race a later one's push
+# (2026-07-25: a queue-delayed run lost a non-fast-forward push race).
+concurrency:
+  group: update-archive
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: write
       id-token: write
