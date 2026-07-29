@@ -1,0 +1,1 @@
+195 msgs, 15 contributors. Grug 67B MoE ("Snowball") lands with SFT/evals green; MATH-500 jumps from 16% to 54% after fixing token limit; Mamba2 on TPU and Over Embedding work begin; hero run architecture candidates tracked for Aug start.

@@ -1,0 +1,9 @@
+- **Midtraining & Snowball** — Grug 67B A2B "Snowball" checkpoint lands with SFT/evals working; MATH-500 errors traced to token limits, re-run at 32k yields 54.2%
+- **Infrastructure** — Controller outage on cw-us-east-08a fixed (broken k8s); IRIS onboarding issues for non-Gmail accounts; OPD RFC opened
+- **Architecture & Linear Attention** — Mamba2 TPU implementation started; Over Embedding yields ~10% loss improvement; KDA deemed too expensive for GB200
+- **Data Pipeline** — Justext blows up on large pages; LSH PR sent for 300+ paragraph docs; raw token pool hits 23T with Dolma 3.5 and Nemotron additions
+- **Inference** — Grug 67B GPU inference v0 lands in vLLM; TPU vs GPU logprobs divergence investigated; vLLM fork sync needed for RL
+- **Evals** — HumanEval blogpost numbers were 0-shot not 10-shot; new math benchmarks PRs (AIME 2026, OlympiadBench); MCP-Atlas function calling eval created
+- **Reinforcement Learning** — Megatron decisively beats FSDP2 for RL defaults; paper shared on RL composing atomic pretraining skills; JUPITER local runs requested
+- **MarinFold** — Bio2Token neural tokenizer corpus PR opened with Mamba-produced protein tokens hosted on GCS
+- **Community & News** — ~20 new members joined; Kimi K3 tech highlights shared (Latent MoE, Quantile Balancing); Inkling model architecture noted
