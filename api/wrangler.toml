@@ -19,4 +19,4 @@ ARCHIVE_DB_URL = "https://marin-discord.pages.dev/archive.db"
 # update D1 from Discord. DISCORD_TOKEN must be set via
 # `wrangler secret put DISCORD_TOKEN`.
 [triggers]
-crons = ["*/10 * * * *"]
+crons = ["*/2 * * * *"]
