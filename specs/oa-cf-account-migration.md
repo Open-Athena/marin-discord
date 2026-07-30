@@ -25,15 +25,18 @@ GH config that points at it: vars `CLOUDFLARE_ACCOUNT_ID`, `VITE_API_BASE`, `PAG
 
 ## Phases
 
-### 1. Parallel build (no user-facing impact)
+### 1. Parallel build (no user-facing impact) — DONE 2026-07-30
 
-Using local `wrangler` OAuth (which can already target the OA account):
+Built via local `wrangler` OAuth targeting the OA account:
 
-- `wrangler d1 create marin-discord` in OA account → new `database_id`
-- Create R2 bucket `marin-discord` in OA account
-- Update parent `api/wrangler.toml`: new `database_id` (account is passed via CI var, not the toml)
-- Deploy worker to OA account manually (`CLOUDFLARE_ACCOUNT_ID=74981a43… wrangler deploy`); worker cron starts ticking against empty D1 — harmless, but note the tick will full-fetch every channel once (~10 min of Discord API paging), seeding D1 organically. Alternatively seed via `d1-import.sh --remote` against the OA DB first.
-- Verify OA worker API serves data.
+- D1 `marin-discord` created: `database_id = d5d5e231-d247-405d-a167-534a19cbd83b`
+- R2 bucket `marin-discord` created (empty; CI populates at cutover)
+- Worker deployed as `marin-discord-api` → `https://marin-discord-api.open-athena.workers.dev`, cron `*/2 * * * *`, `DISCORD_TOKEN` secret set
+- D1 seeded via `d1-import.sh --remote` from a fresh local `build_db.py` build (32,554 messages); first cron tick then caught up the 298-message delta, subsequent ticks quiet/ok
+- OA-variant config lives at `.discord-agent/api/wrangler-oa.toml` (untracked; only difference from `api/wrangler.toml` is `database_id`); helper scripts under `tmp/oa-*.sh`
+- Verified: `curl https://marin-discord-api.open-athena.workers.dev/api/channels/…/messages` serves data; `sync_runs` shows healthy `cfw` ticks
+
+Note: `ARCHIVE_DB_URL` var still points at `marin-discord.pages.dev` (correct — that URL is preserved through cutover).
 
 ### 2. Cutover (one sitting, ~15 min)
 
