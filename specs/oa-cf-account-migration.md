@@ -38,7 +38,7 @@ Built via local `wrangler` OAuth targeting the OA account:
 
 Note: `ARCHIVE_DB_URL` var still points at `marin-discord.pages.dev` (correct — that URL is preserved through cutover).
 
-### 2. Cutover (one sitting, ~15 min)
+### 2. Cutover — DONE 2026-07-30 (~13:00–13:55 UTC)
 
 - User: create OA-scoped API token + R2 keys; update GH secrets `CLOUDFLARE_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
 - Update GH vars: `CLOUDFLARE_ACCOUNT_ID` → `74981a43…`, `VITE_API_BASE` → new workers.dev URL.
@@ -46,7 +46,11 @@ Note: `ARCHIVE_DB_URL` var still points at `marin-discord.pages.dev` (correct �
 - Dispatch `update-archive.yml` with `full_reimport=true` (idempotent re-seed of OA D1 from the canonical archive; also exercises R2 upload with new keys).
 - Verify: viewer loads, search works, digest links in old posts resolve, `sync_runs` shows `cfw` ticks in OA D1.
 
-### 3. Teardown (after a soak period, e.g. a week)
+Executed: GH secrets (`CLOUDFLARE_TOKEN` → OA token `d06ed379…`, new R2 keys) and vars (`CLOUDFLARE_ACCOUNT_ID`, `VITE_API_BASE` → `marin-discord-api.open-athena.workers.dev`) flipped; personal Pages project deleted (via `RW_CLOUDFLARE_API_TOKEN`) and `marin-discord` recreated in OA — the `pages.dev` name transferred without incident; cutover commit `77070da` (OA `database_id` in `api/wrangler.toml`, `_redirects` → `pub-32e3fd2e…r2.dev`); deploy-worker + deploy-app green; `full_reimport` run 30548391549 green (D1 rebuilt, `archive.db` on OA R2, 20.2MB). Verified: viewer bundle compiled with OA API base; `/archive.db` redirect serves; `sync_runs` ticking. The hourly workflow was disabled during the flip and re-enabled after.
+
+Known behavior: each full reimport drops ~298 messages that only the CFW captures (threads invisible to `archive.py` — see the thread-discovery gap), and the next `*/2` tick re-adds them. Fixing `archive.py` thread enumeration closes this.
+
+### 3. Teardown (after a soak period, e.g. a week) — PENDING
 
 - Delete personal-account worker (stops its cron double-writing Discord fetches — harmless but wasteful), D1 database, R2 bucket.
 - Remove any local `.envrc` reliance on the personal `CLOUDFLARE_TOKEN` for this project.
