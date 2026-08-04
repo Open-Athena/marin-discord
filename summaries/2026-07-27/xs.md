@@ -1,0 +1,1 @@
+111 messages, 15 contributors. MarinFold hits R-precision 0.53 closing in on Protenix v2 SS target; Marin-8B red-teaming shows safety breaks with 100 fine-tune examples; 67B MoE on track at 6T cooldown; raw data pool reaches 25T tokens with Stack v3.

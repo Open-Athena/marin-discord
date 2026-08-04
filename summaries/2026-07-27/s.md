@@ -1,0 +1,9 @@
+- **MarinFold Progress** — Best 1.5B model reaches R-precision 0.53 (up from 0.42); new greedy latent loss, backtracking, and rollout refinement experiments underway; scaling to 3B/6B
+- **Safety & Red-Teaming** — G Sandoval red-teamed Marin-8B showing safety collapses to ~99% attack-success with ~100 fine-tune examples; discussion of alignment-in-pretraining via synthetic data
+- **Infrastructure** — Agentic evals documented in PR #7674; wandb logging issues on 67B run; TPU preemption discussed with region-agnostic scheduling tips
+- **Reinforcement Learning** — marianna13's R2E-gym filtering converges faster but doesn't boost OOD transfer; TaskTrove RL wrap-up posted; eval meeting starting next week
+- **Data Curation & Mixing** — Weekly data breakout room launches Thursdays 9am PT; raw pool hits 25T tokens with Stack v3 and CommonCrawl DocX; quality filtering planned for 20T budget
+- **67B MoE Training** — Second cooldown at 6T tokens due tomorrow; main 10T run tracking stage 1 forecast; token-level epoching analysis proposed
+- **Midtraining** — Neha Hulkund SFT'ing models across scaling ladder with different mixes; breakout meeting skipped pending results
+- **Inference & Architecture** — romain shared serving topology analysis for 360B-A22B model; Larry noted Kimi's K3 drops RoPE for KDA layers
+- **News & Research** — Kimi K3 tech report, Online KL Shampoo optimizer from Tilde Research, Liquid LFM-25 encoder, and Synthetic Persona Pretraining shared
