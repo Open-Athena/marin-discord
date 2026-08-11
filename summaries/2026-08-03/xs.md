@@ -1,0 +1,1 @@
+99 messages, 15 contributors: MarinFold improves to 0.562 R-precision but faces measurement issues; global dedup retains 19.7T of 25.6T tokens; linear attention hits near-parity with softmax on TPUs; FAR.AI announces pre-training safety accelerator.

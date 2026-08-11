@@ -1,0 +1,10 @@
+- **MarinFold** — Two new models improve val loss/R-precision; measurement bug identified; coarse fold bottleneck may push team toward diffusion-based 3D coordinate prediction
+- **OpenThoughts-Next** — Team onboarding new RL/data contributors; discussion on keeping work in public channels; conceptofmind seeking data leads
+- **Reinforcement Learning** — RL meeting had Zoom access issues, moved to Google Meet; JeniaJitsev shared new RL paper and asked contributors to follow up in notes
+- **Safety Training** — G Sandoval filed bio-safety filtering issue; discussion of capability filtering vs. alignment injection; FAR.AI announced Open-Weight Pre-Training Safety Accelerator
+- **Scaling Laws** — Questions on Chinchilla token budgets for MoE models; ahmet asked about asymptote fitting; Jeff H pointed to Mumwelt tool and filed visibility issue
+- **Architecture** — Mayank's linear attention hits ~29B tok/day vs 32B for softmax on TPUs; working on faster causal convolution; markhart0034 warned about KV-cache implications
+- **Data Mixing** — willheld reported global dedup of 292-source registry: 25.6T tokens → 19.7T retained (77%); prefers filled structured documents
+- **Evals** — Benjamin Feuer outlined Marin's canonical eval reporting policy; boreas opened first PR on evalchemy eval wishlist item 16
+- **MoE** — Benjamin Feuer noted 10T MoE run looking good; dlwh shared Cursor's mixture-of-kittens repo as related work
+- **Questions & Community** — Largest Marin run is the 32B retro; Ricardo Olmedo requested Snowball checkpoints; 18 new members joined; MarinDNA blog post published
