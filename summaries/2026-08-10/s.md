@@ -1,0 +1,14 @@
+- **MarinFold Progress** — Best model yet (R-precision 0.587) from ESMFold2 distillation sweep; multi-draft generator fine-tuned; helico contact-to-3D folding de-risked
+- **MoE Scaling & Training** — 67B-A2B scaling predictable through 8T tokens; 535B-param hardware test passed on 640 GPUs; Adam beta1 ablations launched
+- **Reinforcement Learning** — Benjamin Feuer stabilized MSkyRL numerics for longer-horizon RL on Qwen3 30B MoEs; SFT checkpoints requested for new base models
+- **Architecture** — Mayank shipped depthwise causal convolution TPU kernel PR and completed linear attention; YOCO-style KV-cache sharing proposed
+- **Code Review & Infra** — mcwitt's compile-time fix cuts 75%; correctness bug found in fused CE loss kernel; +2.23% throughput PR on 64 GPUs
+- **OpenThoughts & Agent SFT** — OT-Agent SFT pipeline walkthrough organized; MarinSkyRL feature parity with upstream SkyRL flagged
+- **Evals** — NUPA/Number Cookbook integration drafted; GLM base model re-eval requested after terminus-2 fixes; AgentTimeOut errors surfaced
+- **Scaling Laws** — Paper extending Chinchilla with data-model exponent discussed; legibility of scaling results flagged as post-hero-launch priority
+- **Data Mixing & Curation** — Harrier-based topic bucket viewer shared; evidence paper for not saving data vs mixing; teacher prompt optimization idea discussed
+- **Long Context** — Hero run plan: 65k context in last 1T tokens via YaRN-style sharpness scaling, then extend to 262k; dropping interaction with seqlen explained
+- **Tokenizer** — Llama 3 vs Tekken compression comparison shows Tekken worse on code; trade-offs between compression and semantic inductive bias discussed
+- **Optimizers** — Ahmed M Ahmed notes optimal hypers vary across data mixes; new Muon variant discussed but novelty questioned
+- **Community & Newcomers** — 28 new joins; notable intros from Jean du Terrail (Living Models), amy (ex-HF), rliaw (Ray co-author), and several biology researchers
+- **News & Research** — Historical books OCR leaderboard previewed; papers on reliable small-scale scaling laws and continual LLM adaptation shared

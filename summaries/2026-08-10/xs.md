@@ -1,0 +1,1 @@
+179 messages, 15 contributors: MoE 67B-A2B scaling looks predictable at 8T tokens; MarinFold hits best-ever model (R-precision 0.587); RL training stabilized for longer runs on Qwen3 30B MoEs; causal convolution & linear attention kernels land for TPU.
