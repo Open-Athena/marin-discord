@@ -1,0 +1,9 @@
+- **Hero Run Launch** — 535B-A23B MoE hero run kicks off on 11 CoreWeave racks with scaling ladder validated; dedicated channel created
+- **MarinFold Progress** — New best model surpasses single-sequence Protenix; RL on multi-draft models shows early promise; eval decontamination underway
+- **MoE Scaling** — 67B-A2B hits lowest-ever Paloma macro loss at 10T tokens; router init and load balancing details shared
+- **Data Mixing** — New production mix underperformed in ladder simulation; token provenance explorer tool released
+- **Evals & OpenThoughts** — Thinking-budget eval issue opened; flawed-summ evals progressing at 8–10/day; agent PR reviews enabled
+- **Reinforcement Learning** — TaskTrove HPO and reward delta reports published; Jupiter hang diagnosed as likely NCCL/RDMA issue
+- **Scaling Law Q&A** — Larry explains power-law loss extrapolation from 4-point ladder; discussion on applicability to non-optimal runs
+- **Infrastructure & Inference** — Marin vLLM fork for TPU support in code review; Zephyr pipeline cancellation bug filed
+- **Community & News** — 15 new members joined; community meeting canceled for hero run sprint; MoE hyperparameter transfer paper shared
