@@ -1,0 +1,1 @@
+563 messages, 15 contributors: Hero run progresses well with ragged all-to-all EP now default, RL on Snowball models shows strong gains (AIME24 17→27%), 67B long-context model nears completion at 262K, and 435+ new members joined.

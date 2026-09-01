@@ -1,0 +1,12 @@
+- **Community Growth** — 435+ new members joined this week; Percy Liang announced a Sept 1 hero run panel/QA at the biweekly community meeting
+- **MarinFold** — Decontaminated eval/training sets in use, first end-to-end RL setup working but not yet beating baselines, and neural token document experiments shared
+- **Data Mixing & Reproducibility** — dlwh proposed publishing per-document metadata for training data; willheld landed PR documenting how to re-hydrate all sources
+- **DNA Models** — Gonzalo Benegas shared six experiment write-ups covering projection pipelines, conservation predictability scaling, MNTP adaptation, and VEP inference
+- **Code Review & Infra** — Ragged all-to-all EP became the default hero backend; Flash Attention bumped to fix H100 NaN issues; agent coding guidelines upstreamed
+- **Evals** — Extended MATH grader PR submitted to Evalchemy; discussion on splitting eval work between Evalchemy and Marin
+- **Scaling Laws** — willheld clarified muP vs. HP scaling law choices — both are heuristics best compared via scaling ladders
+- **Hero Run 2026** — Run tracking ahead of predictions; Larry detailed grad spike logging cadence and design choices to stay in flat hyper basins
+- **Long Context** — dlwh revealed a 67B-A2B model nearing completion with 262K context; introduced "RiffleEval" for pretraining-stage long-context evaluation
+- **Reinforcement Learning** — Benjamin Feuer reported Snowball RL results: AIME24 17→27%, MATH-500 64→78%, OlympiadBench 12→20%
+- **Inference** — romain landed vLLM inference support on H100s for the hero architecture
+- **Safety** — dlwh noted Marin 8B becomes more willing to output misinformation during cooldown, seeking hypotheses
