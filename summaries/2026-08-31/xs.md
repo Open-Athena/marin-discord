@@ -1,0 +1,1 @@
+318 msgs, 15 contributors: 535B hero run gets expert-parallel upgrade (+10% throughput), 160+ new members join, TaskTrove hits v4.13 with 1.7M tasks mapped, RL on Snowball MoE shows promising pass@8k probes on agentic tasks, and MarinFold protein folding pushes forward on low-MSA eval.

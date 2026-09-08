@@ -1,0 +1,7 @@
+- **Community Growth** — 160+ new members joined and Percy Liang welcomed newcomers; community meeting recording and blog posts shared
+- **Hero Run Infrastructure** — Expert-parallel backend redeployed for ~10% throughput gain and near-zero token drops; weight decay added to attn_gate and router
+- **RL & Post-Training** — lukedhlee probed Snowball on r2egym (pass@1 13%, pass@8 37%), Benjamin Feuer validated Slime RL on TaskTrove, and curriculum RL explored by Russell Power
+- **TaskTrove Data Curation** — TaskTrove reached v4.13 with 1.7M tasks across 94 sources; dlwh's audit found ~35% broken tasks triggering cleanup
+- **MarinFold Protein Folding** — Tim O'Donnell posted weekly update covering decontam sweep, soft-target training, positional encoding experiments, and low-MSA eval dashboard
+- **Long Context & Architecture** — LCE with 2x/4x/8x long-doc upsampling improved context recovery to ~91%; architecture Q&A on double RMSNorm in LatentMoE
+- **Code Review & Tooling** — PRs for permanent checkpoint at 55k, jaxpp pipeline parallelism, tutorial docs fix, and Marina dynamic app registry

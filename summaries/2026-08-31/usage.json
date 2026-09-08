@@ -1,0 +1,8 @@
+{
+  "model": "claude-opus-4-6",
+  "input_tokens": 37761,
+  "output_tokens": 3185,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cost_usd": 0.8053
+}
