@@ -1,0 +1,1 @@
+247 msgs, 15 contributors: RL on Snowball doubles pass@1 on r2egym, speculative decoding yields 61% speedup, hero run swaps in ragged expert-parallel backend, MarinFold expands training data 3.3×, and ~95 new members join.

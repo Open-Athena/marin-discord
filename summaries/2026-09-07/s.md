@@ -1,0 +1,10 @@
+- **Reinforcement Learning** — lukedhlee's Snowball RL doubles r2egym pass@1 to 16.6%, ships 61% faster speculative decoding, and audits RL stack bugs; Benjamin Feuer reconstructs Nemotron 3 Ultra's post-training pipeline
+- **DNA Foundation Models** — Jean du Terrail (BOTANIC-1) joins for plant genomics collaboration; Eric Czech discusses CLM vs MLM tradeoffs and MarinDNA plant model plans
+- **Multi-Token Prediction** — New #mtp channel created; Benjamin Feuer reverse-engineers Snowball's pretraining data provenance and publishes snowball-replay dataset
+- **MarinFold** — Training data expanded to 248B tokens via ProteinMPNN; better contacts → lDDT 0.605→0.630; token smearing experiment didn't help; default model switched to decontaminated checkpoint
+- **Hero Run 2026** — Ragged expert-parallel backend deployed at step 81716; Sheng Zha shares MoE router stability tips; Larry tracks grad norms
+- **OpenThoughts Next** — Benjamin Feuer hands off leadership to marianna13 (RL) and Neha Hulkund (SFT); data breakout selects 4 primary sources for TaskTrove
+- **Data Curation** — SQL and Kaggle-style tasks proposed for TaskTrove; willheld creates AgentTrove compaction dataset; dlwh attempts exact dedup
+- **Code Review** — mcwitt fixes NCCL sharding bug, willheld adds chat normalization PR, dlwh adds PR review guidance for external contributors
+- **Evals** — lukedhlee and Mrinal Kumar discuss eval protocol versioning and dual-lane eval policy for train/eval parity
+- **News & Community** — DeepSeek V4.1-Flash report drops; ~95 new members join; notable introductions from Cambridge stats prof qz and Microsoft MLE Raghu
