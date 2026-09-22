@@ -1,0 +1,1 @@
+240 msgs, 15 contributors: Hero run gets data mix tweak + 3% throughput boost, RL'd Snowball doubles SWE-Bench pass@1, MarinFold hits new best model with synthetic data, new #mechinterp channel launched, and ~68 new members join.

@@ -1,0 +1,14 @@
+- **RL Progress on Snowball** — New stack beats old on r2egym (pass@1: 50→60%), RL doubles SWE-Bench pass@1; OPD proof-of-life landed and vLLM deps bumped
+- **MarinFold Updates** — New best model from ProteinMPNN-expanded training set; soft-target training shows modest early advantage; Proteina corpus generation on track for ~1M structures
+- **Hero Run 2026** — Data mix sampling weights tweaked at ~108k steps with scaling ladder validation; ragged EP gives +3% throughput; TST debated but shelved
+- **Data Curation & Contamination** — Initial SFT contamination/dedup report reveals false positives in KernelGym; wildchat-GLM format completions and TaskTrove subsets shared
+- **SFT & Post-Training** — New Snowball SFT checkpoint (262K) released with router/bias freezing; post-training roadmap targets ~Oct 6 debut
+- **Evals** — New eval policy published; lukedhlee shows summarization helps even without explicit training on it
+- **Architecture & Looped Transformers** — Paper on scaling laws for looped transformers sparks discussion on depth scaling vs MoE trade-offs
+- **Infrastructure & Code** — Russell Power presents Marin infra talk (20 reactions); GC pause coordination and QB MoE standardization PRs landed
+- **MoE Router Issues** — mcwitt flags alarming router metric excursions on d768 scaling ladder; investigation underway
+- **Tokenizer** — Larry finds vocab beyond 16k yields surprisingly small compression gains on pretrain distribution
+- **Mechanistic Interpretability** — New #mechinterp channel launched; Jeff H shares framing papers on actionable interpretability
+- **Speculative Decoding & MTP** — Frozen Eagle3 draft model doesn't drift from RL even after 60 steps on r2egym
+- **Community Growth** — ~68 new members joined; 11 introductions from researchers at Cambridge, CMU, Yale, and industry
+- **News & Research** — Blog on compute procurement for research nonprofits; training-inference mismatch paper flagged for testing
