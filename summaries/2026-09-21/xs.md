@@ -1,0 +1,1 @@
+205 msgs, 15 contributors: Hero run relaunched with ~10% throughput boost to ~27% MFU, SFT→RL adds 8+ pts on SWE-Bench, new automated pretraining experiment loop on H100s, 44 new members join, and MiMo open-sources 7K RL envs.

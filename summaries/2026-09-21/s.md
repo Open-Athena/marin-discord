@@ -1,0 +1,10 @@
+- **Reinforcement Learning** — SFT→RL pipeline adds 8+ points on SWE-Bench; mini-swe-agent harness outperforms Terminus-2 for native tool calling; MiMo RL envs open-sourced
+- **MarinFold** — Second epoch didn't improve contact accuracy; delta-stream format and 0.7B/1.5B/3B size sweep in progress; Proteina synthetic data curation continues
+- **News & Shared Resources** — OpenRSI foundation uses Marin pretraining ladder; TPU megakernels post shared; Tencent RL hyperparameter paper highlighted
+- **General & Community** — willheld publishes DataKit blog post; Larry launches automated 8-min pretraining experiment loop on H100s; dlwh to create metadata-only hero data mix
+- **Data Curation & Mixing** — marianna13 updates RL dataset catalog; lukedhlee asks about SFT/RL data catalog; Ahmed asks detailed questions about data mix methodology
+- **Architecture** — QK-norm compatible with MLA but adds 33% KV cache overhead; Snowball is ~83x overtrained at 10T tokens on 2B active params
+- **Code Review & Infra** — mcwitt lands PRs for ~27% MFU with 3% additional GC improvement; hero-shape hotfix merged; TPU disk fill issue flagged for symlink revert
+- **SFT** — New Grug-67B SFT checkpoint (09.21) released with Terminus training and /think support; RSR proxy for teacher selection shows promising results
+- **Multimodality & Mechinterp** — TheWizard proposes omni-multimodal plan starting with audio+images; willheld shares refusal-behavior isolation paper
+- **Hero Run 2026** — Relaunched with ~10% throughput improvement; MFU boosts give confidence for future architecture experiments
