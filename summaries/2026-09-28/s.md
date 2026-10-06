@@ -1,0 +1,10 @@
+- **Reinforcement Learning** — SFT gains on TB-lite (+13.5pp), anti-doom-loop FTPO applied to Snowball, RL data catalogue launched, coding agent SFT hits 45-47% SWE-bench, and an `eject_button` tool proposed for impossible tasks
+- **MarinFold** — Delta-stream run reaches 0.576 R-precision (vs 0.511 baseline), complex corpus published at 3.41M docs/11.15B tokens, and diversity-oriented inference experiments were negative
+- **Long Context** — Snowball SFT MRCR at 18.3 vs Qwen's 92.7; graphwalks score 0.06 vs 0.5; doom-looping and over-reasoning identified as key culprits
+- **Community Meeting & General** — Tuesday talk by rav, Mark, mcwitt on co-designing architecture with kernels for the hero run; slides, recording, and blog post shared
+- **Architecture** — Two-tower decoder paper shared, sofamax tested in Marin showing 1.1-1.3× speedup, discussion on scaling to large vocab sizes
+- **Ideas** — Sway shared CombinatorialBPE factorized tokenizer; TheWizard suggested collecting team agent traces for RL data
+- **Marin for Science** — New channel created; Tim invited chemistry benchmarking on Snowball; TB-Science Lite eval set proposed by Steven Dillmann
+- **Evals & Code** — Eval policy draft with TB 2.1, 65k context, 3 trials per task; willheld planning eval policy correlation with AA-II; dlwh designing non-shell tool environments in TaskCompendium
+- **Infra & Code Review** — Quality classifier PR by RedSpidey cuts scoring time ~30%; Mark explained DCLM-style quality pipeline for large datasets
+- **News & Research** — Tokenization survey, Pangram paper, AI2 training-stack release noted; PE hybrid mechinterp preprint shared
