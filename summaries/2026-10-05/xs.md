@@ -1,0 +1,1 @@
+180 messages, 15 contributors. Hero run gets +9% throughput (now ~40% faster total), verifyit grader policy settled, MarinFold trains protein complexes & Qwen fine-tunes, and SFT recovery mix doubles SWE-bench to 40%.

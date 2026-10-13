@@ -1,0 +1,11 @@
+- **Hero Run Optimizations** — mcwitt deployed +9% throughput optimizations bringing total hero run speedup to ~40%; dlwh highlighted the milestone in #general
+- **Verifyit Grader Policy** — Team agreed: keep original (buggy) graders for evals, fix graders only for training ingestion
+- **RL Environment & Dataset Design** — Mark shared a design doc for RL environment generation; Russell Power shared a complementary doc for ingesting existing datasets
+- **MarinFold Progress** — Protein complex model finished training with strong loss improvements; six Qwen3.5 fine-tuning trials launched; MoML poster planned
+- **SFT & RL Post-Training** — marianna13's SFT mix doubled SWE-bench to 40%; Harshit Varma's filtering-based SFT showed further gains; Benjamin Feuer explored model merging and DPO
+- **Code Review & Dependency Management** — Multiple PRs for TaskTrove fixes, handoff checkpoints, and Russell Power's plan to publish marin-* libs to PyPI
+- **Evals & Scaling** — Benjamin Feuer analyzed eval sensitivity to FLOPS; willheld proposed ACPX version bump to fix T³ flakiness
+- **Architecture Explorations** — Matheart shared low-rank MoE router paper for 2048+ experts; Larry found query-key alignment in Marin Belay and explored YOCO sparse compute
+- **AMD Porting** — amy completed first full Grug snowball run on MI300X; now tracking MFU improvements
+- **Community Growth** — 77 new joins in #welcome-room; 7 introductions from engineers and students across industry and academia
+- **News & Research** — Reflection AI released Beam model with similar specs to Marin; Mimo coding task contamination found; emergent misalignment paper shared
