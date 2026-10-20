@@ -1,0 +1,13 @@
+- **RL & Post-Training** — karansag compared MOPD/SFT/weight-merging for Snowball; marianna13 shared recovery SFT on antidoom model; score centering and IFBench audit discussions emerged
+- **Hero Run Updates** — Hero paused briefly for QK multiplier sweep before 4k→16k context switch; Larry pruning checkpoints to free S3 space
+- **Architecture Experiments** — Larry reports KDA+MLA+attention residuals hitting 25.5% MFU at hero scale; Kaiyue-Wen flagged impressive CPLM paper gains
+- **Code Review & VLM** — TheWizard's PR introduces SigLip vision encoder to Levanter; dlwh clarified grug-style vs reference model boundaries
+- **OpenThoughts-Next Data** — Franziska Weindel shipped V1 validated tasks (42K across 8 sources); LLM-as-judge filtering with Opus 5.5 underway
+- **SFT & Training Infra** — marianna13 validated Levanter SFT on Marenostrum at 2x Megatron speed; karansag posted MOPD vs SFT comparison results
+- **Evals & Benchmarks** — Benjamin Feuer launched new Snowball eval policy with infra error tracking; dlwh debuted HallBench LLM comparator app
+- **Speculative Decoding** — Atula Tejaswi trained DSpark 280M drafters for Snowball achieving 3.14 acceptance length and 2.16x throughput
+- **Community & Events** — Percy Liang hosted hinted scaling laws talk by rohithck; dlwh announced NYC gathering 10/27; 37 new members joined
+- **Data Curation** — marianna13 flagged false-positive verifier issues in RL datasets; Mark shared ~750 science tasks from Taskforge curriculum
+- **Long Context** — Benjamin Feuer proposed cooling down an intermediate Mochi checkpoint using external compute from Alex Dimakis and lukedhlee
+- **Mech Interp** — Joey asked whether Marin's open training access has enabled novel mechanistic interpretability findings
+- **News & Research** — Papers shared on batch size scaling, Microsoft frontier pretraining, and Meta's Muse Spark open release

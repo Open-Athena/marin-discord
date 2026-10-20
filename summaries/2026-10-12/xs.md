@@ -1,0 +1,1 @@
+119 messages across 19 channels from 15 contributors. Hero run paused for QK multiplier sweep ahead of 4k→16k context switch; Levanter SFT shown 2x faster than Megatron; new VLM vision modality PR landed; DSpark drafters achieve 2.16x speedup for Snowball inference.
