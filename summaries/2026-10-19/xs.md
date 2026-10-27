@@ -1,0 +1,1 @@
+142 messages, 15 contributors: Hero run hits 36.8 MFU with MXFP8 on 1 rack; kernel PRs target +3% more MFU; MarinFold complex-contact benchmark lands at 2.6% R-precision; RL experiments on Antidoom show reward trending up; 41 new members joined.

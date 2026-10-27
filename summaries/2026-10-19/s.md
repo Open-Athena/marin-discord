@@ -1,0 +1,11 @@
+- **Architecture & MFU** — Hero run reaches 36.8 MFU with MXFP8; boba shop cashier opens PRs for fused kernels and cuDNN replacements targeting ~3% additional MFU gain
+- **MarinFold** — Complex-contact benchmark complete at 2.6% inter-chain R-precision; model-size sweep (255M–5.86B) and ProteinMPNN-only runs progressing; contact proofreader published
+- **Data Mixing** — Block-shuffle periodicity spotted in loss curves from 500M-token blocks; team decides to leave as-is for current run; phase 2 mix (last 20%) starting soon
+- **Code Review** — PRs for fused RMSNorm+GatedNorm, vocab-grad optimization, SigLIP VLM encoders, and a new exploratory-code archival workflow to reduce PR sprawl
+- **Reinforcement Learning** — marianna13 runs RL overfit experiments on Antidoom with Tmax tasks; Snowball v0.1 verbosity spike flagged; cold-start SFT may beat Dr. Doom as RL baseline
+- **Data Curation** — Proposal for metadata-only shareable data mix; agentic SFT traces flagged for bad behavior needing filtering; pass@4 comparison across Qwen/Cold SFT/Dr. Doom
+- **SFT** — Recovery SFT experiments shared; willheld releases tiny "Snowflake" debug models; marianna13 studies teacher-student KL alignment effects on SFT
+- **Mech Interp** — likelytobelaura and Joey plan circuit-hunting projects on Marin 32B; initial neuron atlas dataset published on HuggingFace
+- **Multi-Token Prediction** — New DSpark drafter checkpoint achieves ~1.9x speedup; team coordinates integrating drafters into default RL runs
+- **Post-Training & Tasks** — Bilibird opens PR for static task checker based on TB rubrics; suggests Muse Glimmer 30B as teacher for task selection
+- **News & Community** — Kimi-K3 BPB benchmarks discussed; NYC Marin gathering on 10/27; 41 new members across welcome waves; several new contributors introduced
