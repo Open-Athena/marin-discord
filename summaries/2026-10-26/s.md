@@ -1,0 +1,9 @@
+- **Hero Run Stability** — Investigated softmax collapse and attention gradient precision; FP32 fix reduced gradient error but showed no loss change; grad clip PR merged instead
+- **Scaling Laws & Predictability** — dlwh questioned why the original Delphi recipe blew up; team debated whether isoflop smoothness predicts stability at scale
+- **RL Post-Training Results** — marianna13 shared RL data ablations on Snowball; lukedhlee's SFT+RL pipeline hit 50.5% SWE-Bench 100
+- **Architecture & MFU** — dlwh explained low initial hero MFU as a deliberate tradeoff to start training sooner on fresh hardware
+- **OpenThoughts Data Pipeline** — Discussion on LLM-as-judge scalability and IFEval degradation when thinking is enabled
+- **Community & Onboarding** — ~28 new members joined; community meeting canceled for NYC festivities; new #math channel created
+- **Scaling Laws Research** — New paper shared on scaling law fitting; hmdolatabadi cautioned about overfitting predictors to observed curves
+- **Multimodality & VLM Scaling** — TheWizard asked about vision-language scaling; papers shared on parameter-efficient VLM training
+- **Miscellaneous Updates** — Sway demoed Qwen tokenizer conversion; Charlie R shared IFM's task-factory for RL task synthesis; #math channel launched

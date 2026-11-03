@@ -1,0 +1,1 @@
+159 messages, 15 contributors. Hero run investigated softmax collapse & attention gradient issues—FP32 fix validated but no loss impact seen; grad clip PR merged. RL post-training Snowball hit 50.5% SWE-Bench 100. Scaling laws debate on why old recipe blew up.
