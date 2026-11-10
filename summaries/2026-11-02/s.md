@@ -1,0 +1,10 @@
+- **Mochi Pretraining Complete & Hero Run Context Extension** — Mochi 535B finished main pretraining at 18T tokens; hero run relaunching with 65k→262k context using two attention-scaling methods
+- **SFT Mix & Chat Templates** — Team discussed Mochi SFT mix composition, chat template representation in LCE, and rapid SFT to get a conversational checkpoint up
+- **Marin for Science** — First weekly sync scheduled; Allen proposing pipeline for generating RL science tasks that avoid TB-Science leakage
+- **MarinFold Progress** — ProteinMPNN-only runs increase diversity but lower accuracy; 5.86B runs diverged; NLP-pretrained Qwen 4B models improving
+- **Data Curation & Quality** — Min Li audited Open-SWE traces finding leaks; dlwh working on metadata-only dataset version for external use
+- **Reinforcement Learning** — RL data mixtures paper club, Nemotron post-RL analysis shared, request for Snowball RLVR training trajectories
+- **Agent Tooling & Code Talk** — Team explored Rhizome as multi-agent session layer for Buzz; Nico submitted PR for agent harness config
+- **Architecture & Scaling Heuristics** — Larry shared MoE architecture tuning rules of thumb for AMD hardware; multi-stream attention residuals discussed
+- **Community Growth & Introductions** — 48 new members joined; notable intros from researchers at Harvard, Caltech, METR, and a new Open Athena evals lead
+- **News & Research** — Mistral Large 4 report on KV-cache tradeoffs, Inkling 2 Small, Beam tech report, and Common Crawl quality analysis paper shared

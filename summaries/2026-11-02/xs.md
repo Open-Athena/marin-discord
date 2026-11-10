@@ -1,0 +1,1 @@
+Marin's Mochi 535B-A23B finished 18T-token pretraining; hero run extending to 262k context over the weekend. 217 messages, 15 contributors. SFT mix discussions, MarinFold updates, and new Marin for Science weekly syncs kicked off.
