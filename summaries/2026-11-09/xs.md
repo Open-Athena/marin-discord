@@ -1,0 +1,1 @@
+145 messages, 15 contributors. Big wave of 75+ new members; Marin for Science held first community meeting with eval policy & TB-Science OOD debate; Benjamin Feuer showed lookahead packing cuts SFT padding to 1.3% and shared OPD vs SFT ablation results; AMD pretraining work underway.

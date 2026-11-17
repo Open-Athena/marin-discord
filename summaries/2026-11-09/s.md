@@ -1,0 +1,12 @@
+- **Community Growth** — 75+ new members joined; Percy Liang announced first in-person Marin meetup in SF on Nov 17
+- **Marin for Science** — First community meeting covered eval policy, TB-Science OOD/ID debate, and new SMILES-based chemistry tasks
+- **SFT Quality & Efficiency** — Larry ran Claude audit of Grug SFT mix; Benjamin Feuer's lookahead packing cut padding from 13.6% to 1.3%; identity SFT report wrapped up
+- **OpenThoughts-Next** — Ani shared judge quality experiments on SWE-bench (87-90% accuracy); experiment tracking database proposed
+- **Getting Started** — Several newcomers looking to contribute; siddgood proposed forming a post-training collaboration group
+- **Architecture** — AMD pretraining in progress targeting snowball-scale; question raised about pre-vocab-projection gate design
+- **Community Meetings & Announcements** — Percy Liang hosted post-training community meeting with Benjamin Feuer; recording posted
+- **MarinFold** — ProteinMPNN-only training closes accuracy gap at two epochs; team shifting energy toward marin-for-science
+- **Reinforcement Learning** — Benjamin Feuer shared OPD vs SFT ablation showing on-policy distillation may cause less catastrophic forgetting
+- **Code & Data Fixes** — Min Li's PR fixes OpenCode quote artifacts and empty system messages; Xiaoyuan Wang fixed Snowball closure row grading
+- **Mech Interp** — likelytobelaura shared fun "conspiracy theory neuron" found in Marin 32B via SAAR mech interp project
+- **News & Research** — End-to-end 4-bit training blog post shared; Shizuku full-duplex Japanese conversation model announced
