@@ -1,0 +1,10 @@
+- **Mochi Checkpoints & Transparency** — All 57 Mochi 535B-A23B pretraining checkpoints released; dlwh announced "Marin Press Office" for surfacing research
+- **Data Mixing Methodology** — yurusankyo planning arXiv paper on parametric mixing; db tested eval-selection SNR proxy with mixed results
+- **Safety Training via SPP** — dlwh greenlit replicating Synthetic Persona Pretraining on Marin; nikhil and Charles Weill collaborating on evals and data
+- **Marin for Science** — musa shared MarinFold calibration results and chemistry benchmark; lab protocols dataset surfaced for RL task synthesis
+- **Architecture Explorations** — Optimizer updates expected for next hero run; andrew shared findings on v-conv, dynamic conv, RoPE contraction, and APOLu; mxfp4 training proposed
+- **Data Curation & Quality** — Min Li audited Nemotron SFT data finding ~13.5% C++ failures and 52.7% failed Lean proofs; Datology claims 6× compute savings
+- **Midtraining & SFT** — Larry highlighted Reflection's Beam tech report; karansag compared MuonH vs Adam for SFT; dml showed filtering Open-SWE traces helps
+- **Code Review & Infra** — dlwh confirmed plan to replace haliax with raw JAX; yurusankyo PRs for epoching and context-length switching
+- **RL & Post-Training** — karansag ran group-size ablations for Mochi RL; Atula Tejaswi reported 2× gains with single-turn Reasoning Gym RL
+- **Community Growth** — 57 new members joined; geohot, birger (OpenEuroLLM), enelle (Kakao), and hk (ClimbLab-Ja creator) introduced themselves

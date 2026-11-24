@@ -1,0 +1,1 @@
+179 messages, 15 contributors. Mochi 535B-A23B pretraining checkpoints released (57 checkpoints, 18.2T tokens). SPP safety replication greenlit for TPU runs; data mixing methodology headed to arXiv; geohot joins the community.
